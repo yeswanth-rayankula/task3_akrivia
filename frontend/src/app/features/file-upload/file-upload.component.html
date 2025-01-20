@@ -1,0 +1,23 @@
+<div class="file-upload-container">
+    <div class="upload-section">
+      <h2>Upload File</h2>
+      <input type="file" (change)="onFileSelected($event)" />
+      <button (click)="uploadFile()">Upload</button>
+      <button (click)="downloadSelectedFiles()" [disabled]="selectedFileNames.length === 0">
+        Download Selected Files as ZIP
+      </button>
+    </div>
+  
+    <div class="download-section">
+      <h2>Uploaded Files</h2>
+      <div class="file-list">
+        <div *ngFor="let file of files" class="file-item">
+          <span>{{ file.name }}</span>
+          <input type="checkbox" (change)="toggleFileSelection(file.name)" />
+        </div>
+      </div>
+  
+      
+    </div>
+  </div>
+  

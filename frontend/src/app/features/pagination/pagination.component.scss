@@ -1,0 +1,146 @@
+/* pagination.component.scss */
+
+/* General styling for the table */
+.table {
+  width: 100%;
+  table-layout: fixed; /* Prevent columns from expanding */
+  border-collapse: collapse;
+  overflow-x: auto;
+}
+
+/* Styling for table cells */
+.table td, .table th {
+  max-width: 200px; /* Set max width for cells */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+/* Ensure input fields do not overflow their cells */
+.table input[type="text"],
+.table input[type="number"] {
+  width: 100%; /* Inputs should take the full width of the cell */
+  box-sizing: border-box;
+  padding: 5px;
+  height: 30px; /* Fixed height for inputs */
+  background-color: #f9f9f9; /* Light background for inputs */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Table row styling for edit mode */
+.table tr.edit-mode {
+  background-color: #f0f0f0; /* Light background when editing */
+}
+
+/* General button styling */
+.btn-icon {
+  font-size: 18px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #4CAF50;
+}
+
+.btn-icon:hover {
+  color: #45a049;
+}
+
+.pagination-controls {
+  margin-top: 20px;
+}
+
+.pagination-controls .btn {
+  background-color: #2196F3;
+}
+
+.pagination-controls .btn:hover {
+  background-color: #0b7dda;
+}
+
+/* Styling for inputs when in editing mode */
+.edit-mode input {
+  background-color: #e9f5e9; /* Slightly different color when in edit mode */
+}
+
+/* Prevent the container from expanding beyond the screen */
+.inventory-container {
+  max-width: 100%;
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+}
+
+/* Styling for individual pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pagination-controls .btn {
+  background-color: #2196F3;
+  margin: 0 5px;
+}
+
+.pagination-controls .btn:hover {
+  background-color: #0b7dda;
+}
+
+/* Styling for inputs in the search and filter section */
+.search-input {
+  padding: 8px;
+  margin: 10px;
+  width: 200px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.search-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tabs .btn-tab {
+  margin-right: 15px;
+}
+
+.tabs .btn-tab.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Ensure the whole table stays within the container */
+.main-content {
+  overflow: hidden;
+  width: 100%;
+}
+
+.table td, .table th {
+  text-align: left;
+}
+
+.table th {
+  background-color: #f4f4f4;
+}
+
+/* Prevent inputs from increasing the row height */
+.table tr {
+  height: auto; /* Adjust height based on content */
+}
+
+/* Style for editing buttons */
+.btn-icon {
+  font-size: 20px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+/* Focus on the inputs while editing */
+.table input[type="text"]:focus,
+.table input[type="number"]:focus {
+  outline: none;
+  border: 2px solid #4CAF50;
+  background-color: #e3f2e3;
+}

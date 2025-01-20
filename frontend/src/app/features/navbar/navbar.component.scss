@@ -1,0 +1,7 @@
+/* In your navbar.component.scss */
+img {
+    width: 40px;   /* Set the width */
+    height: 40px;  /* Set the height */
+    object-fit: cover; /* Ensures the image maintains aspect ratio and fits within the box */
+  }
+  

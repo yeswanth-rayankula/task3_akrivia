@@ -1,0 +1,137 @@
+<div class="inventory-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>CART <span class="vendor-count">{{ totalItems }} vendors</span></h2>
+    <div class="action-buttons" *ngIf="viewMode === 'viewAll'">
+      <button class="btn" (click)="downloadSelectedItems()">Download All</button>
+      <button class="btn">Import</button>
+      <button class="btn" (click)="moveToCart()">Move to Cart</button>
+      <button class="btn">Add Product</button>
+    </div>
+  </div>
+
+  <!-- Tabs and Filters Section -->
+  <div class="filters">
+    <div class="tabs">
+      <button
+        class="btn-tab"
+        [class.active]="viewMode === 'viewAll'"
+        (click)="setViewMode('viewAll')"
+      >
+        View all
+      </button>
+      <button
+        class="btn-tab"
+        [class.active]="viewMode === 'cart'"
+        (click)="setViewMode('cart')"
+      >
+        Cart
+      </button>
+    </div>
+    <div class="search-filters">
+      <input type="text" placeholder="Search" class="search-input" />
+      <button class="btn">Filters</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Inventory Items -->
+    <div *ngIf="viewMode === 'viewAll'">
+      <table class="table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" (change)="selectAll($event)" /></th>
+            <th>Product Name</th>
+            <th>Status</th>
+            <th>Category</th>
+            <th>Vendors</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of inventoryData">
+            <th><input type="checkbox" [(ngModel)]="item.isSelected" /></th>
+            <td *ngIf="!item.isEditing">{{ item.product_name }}</td>
+            <td *ngIf="item.isEditing">
+              <input [(ngModel)]="item.editedProductName" placeholder="Enter product name" />
+            </td>
+
+            <td *ngIf="!item.isEditing">{{ item.status }}</td>
+            <td *ngIf="item.isEditing">
+              <input [(ngModel)]="item.editedStatus" placeholder="Enter status" />
+            </td>
+
+            <td *ngIf="!item.isEditing">{{ item.category_name }}</td>
+            <td *ngIf="item.isEditing">
+              <input [(ngModel)]="item.editedCategoryName" placeholder="Enter category" />
+            </td>
+
+            <td *ngIf="!item.isEditing">{{ item.vendor_name }}</td>
+            <td *ngIf="item.isEditing">
+              <input [(ngModel)]="item.editedVendorName" placeholder="Enter vendor name" />
+            </td>
+
+            <td *ngIf="!item.isEditing">{{ item.quantity_in_stock }}</td>
+            <td *ngIf="item.isEditing">
+              <input [(ngModel)]="item.editedQuantity" placeholder="Enter quantity" type="number" />
+            </td>
+
+            <td *ngIf="!item.isEditing">{{ item.unit_price }}</td>
+            <td *ngIf="item.isEditing">
+              <input [(ngModel)]="item.editedUnitPrice" placeholder="Enter price" type="number" />
+            </td>
+
+            <td>
+              <button *ngIf="item.isEditing" class="btn-icon" (click)="saveEdit(item)">✔️</button>
+              <button *ngIf="item.isEditing" class="btn-icon" (click)="cancelEdit(item)">❌</button>
+              <button *ngIf="!item.isEditing" class="btn-icon" (click)="toggleEdit(item)">✏️</button>
+              <button class="btn-icon" (click)="deleteItem(item)">🗑️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-controls">
+        <button class="btn" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+        <span>{{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div *ngIf="viewMode === 'cart'">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Category</th>
+        <th>Vendor</th>
+        <th>Quantity</th>
+        <th>Unit Price</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of cartData">
+        <td>{{ item.product_name }}</td>
+        <td>{{ item.category_name }}</td>
+        <td>{{ item.vendor_name }}</td>
+        <td>
+          <button (click)="decreaseQuantity(item)" class="btn-quantity">-</button>
+          <span>{{ item.quantity_in_stock }}</span>
+          <button (click)="increaseQuantity(item)" class="btn-quantity">+</button>
+        </td>
+        <td>{{ item.unit_price | currency }}</td>
+        <td>
+          <button class="btn-icon" (click)="removeFromCart(item)">🗑️</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+</div>
