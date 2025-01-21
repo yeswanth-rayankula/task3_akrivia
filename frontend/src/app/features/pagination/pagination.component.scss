@@ -1,146 +1,187 @@
-/* pagination.component.scss */
-
-/* General styling for the table */
-.table {
-  width: 100%;
-  table-layout: fixed; /* Prevent columns from expanding */
-  border-collapse: collapse;
-  overflow-x: auto;
-}
-
-/* Styling for table cells */
-.table td, .table th {
-  max-width: 200px; /* Set max width for cells */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 8px;
-  border: 1px solid #ddd;
-}
-
-/* Ensure input fields do not overflow their cells */
-.table input[type="text"],
-.table input[type="number"] {
-  width: 100%; /* Inputs should take the full width of the cell */
-  box-sizing: border-box;
-  padding: 5px;
-  height: 30px; /* Fixed height for inputs */
-  background-color: #f9f9f9; /* Light background for inputs */
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-/* Table row styling for edit mode */
-.table tr.edit-mode {
-  background-color: #f0f0f0; /* Light background when editing */
-}
-
-/* General button styling */
-.btn-icon {
-  font-size: 18px;
-  cursor: pointer;
-  background: none;
-  border: none;
-  color: #4CAF50;
-}
-
-.btn-icon:hover {
-  color: #45a049;
-}
-
-.pagination-controls {
-  margin-top: 20px;
-}
-
-.pagination-controls .btn {
-  background-color: #2196F3;
-}
-
-.pagination-controls .btn:hover {
-  background-color: #0b7dda;
-}
-
-/* Styling for inputs when in editing mode */
-.edit-mode input {
-  background-color: #e9f5e9; /* Slightly different color when in edit mode */
-}
-
-/* Prevent the container from expanding beyond the screen */
+/* General Styles */
 .inventory-container {
-  max-width: 100%;
-  overflow-x: auto; /* Allow horizontal scrolling if needed */
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  color: #333;
 }
 
-/* Styling for individual pagination controls */
-.pagination-controls {
+.header {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
   align-items: center;
 }
 
-.pagination-controls .btn {
-  background-color: #2196F3;
-  margin: 0 5px;
-}
-
-.pagination-controls .btn:hover {
-  background-color: #0b7dda;
-}
-
-/* Styling for inputs in the search and filter section */
-.search-input {
-  padding: 8px;
-  margin: 10px;
-  width: 200px;
-  border: 1px solid #ddd;
+.btn {
+  padding: 10px 15px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background-color: #007bff;
+  color: white;
   border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.search-filters {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.btn:hover {
+  background-color: #0056b3;
 }
 
-.tabs .btn-tab {
-  margin-right: 15px;
+.btn-light {
+  background-color: #f8f9fa;
+  color: #333;
 }
 
-.tabs .btn-tab.active {
-  background-color: #4CAF50;
+.btn-primary {
+  background-color: #007bff;
   color: white;
 }
 
-/* Ensure the whole table stays within the container */
-.main-content {
-  overflow: hidden;
-  width: 100%;
+/* Dropdown Styles */
+.dropdown {
+  position: relative;
+  display: inline-block;
 }
 
-.table td, .table th {
+.dropdown .btn {
+  background-color: #6c757d;
+}
+
+.dropdown-menu {
+  display: block;
+  position: absolute;
+  top: 40px;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  margin: 0;
+  list-style: none;
+  z-index: 1000;
+  min-width: 150px;
+  border-radius: 4px;
+}
+
+.dropdown-menu li {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.dropdown-menu li:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdown-menu label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+/* Table Styles */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.table th,
+.table td {
+  border: 1px solid #ccc;
+  padding: 10px;
   text-align: left;
 }
 
 .table th {
-  background-color: #f4f4f4;
+  background-color: #f8f9fa;
 }
 
-/* Prevent inputs from increasing the row height */
-.table tr {
-  height: auto; /* Adjust height based on content */
+.product-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #ccc;
 }
 
-/* Style for editing buttons */
-.btn-icon {
-  font-size: 20px;
-  padding: 5px;
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1050;
+  width: 500px;
+  max-width: 90%;
+}
+
+.modal-dialog {
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #ccc;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-body {
+  padding: 15px;
+}
+
+.btn-close {
+  border: none;
+  background: none;
+  font-size: 18px;
   cursor: pointer;
 }
 
-/* Focus on the inputs while editing */
-.table input[type="text"]:focus,
-.table input[type="number"]:focus {
-  outline: none;
-  border: 2px solid #4CAF50;
-  background-color: #e3f2e3;
+.modal .btn-close:hover {
+  color: #ff0000;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.pagination-controls .btn {
+  padding: 5px 10px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table {
+    font-size: 12px;
+  }
+
+  .modal {
+    width: 90%;
+  }
 }

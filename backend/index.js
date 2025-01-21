@@ -5,9 +5,8 @@ const register = require('./src/v1/register/register.routes');
 const loginUser = require('./src/v1/login/login.routes');
 const User = require('./src/v1/user/user.routes');
 const product = require('./src/v1/pagination/pagination.routes');
-
-
 const AWS = require('aws-sdk');
+const { decryptRequestBody, encryptResponseBody } = require('./src/middlewares/decrypt');
 
 
 
@@ -50,37 +49,40 @@ if (!fileName || !fileType) {
     ContentType: fileType, 
   };
 
-
+  
   s3.getSignedUrl('putObject', params, (err, url) => {
     if (err) {
       console.error('Error generating pre-signed URL:', err);
       return res.status(500).send('Error generating URL.');
     }
-     console.log(url);res.status(200).json({ url });
+
+     console.log(url);
+     res.status(200).json({ url });
   });
 });
 
 app.get('/api/get-presigned-urls-for-get', (req, res) => {
-  const { fileNames } = req.query; // Expecting a comma-separated list of file names
+  const { fileNames } = req.query; 
   console.log(fileNames);
   if (!fileNames) {
     return res.status(400).json({ error: 'Missing fileNames' });
   }
 
-  const files = fileNames.split(','); // Split the file names into an array
+  const files = fileNames.split(','); 
   const preSignedUrls = [];
 
-  // Generate a pre-signed URL for each file
+
   Promise.all(
     files.map((fileName) => {
       const params = {
         Bucket: process.env.S3_BUCKET_NAME,
         Key: `yes/files/${fileName}`,
-        Expires: 30000, // URL expires in 5 minutes
+        Expires: 300000, 
       };
 
       return s3.getSignedUrlPromise('getObject', params)
         .then((url) => ({
+          
           fileName,
           url,
         }))
@@ -130,7 +132,7 @@ app.get('/api/files', (req, res) => {
 });
 
 
-
+// app.use(encryptResponseBody);
 
 
 app.listen(4000, () => console.log('Server running on port 4000'));

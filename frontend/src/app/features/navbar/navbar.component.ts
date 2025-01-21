@@ -22,7 +22,7 @@ export class NavbarComponent implements OnInit {
         console.log(data);
         this.user = data;
         this.username = this.user.username;
-      
+        this.profilePicUrl=this.user.profile_pic;
       },
       error: (err) => {
         console.error('Error fetching user', err);
@@ -63,7 +63,7 @@ export class NavbarComponent implements OnInit {
   
     console.log('Selected file:', this.selectedFile);
   
-    // Step 1: Get pre-signed URL for upload (PUT)
+
     this.http.get('http://localhost:4000/api/get-presigned-url', {
       params: { fileName, fileType },
     }).subscribe(

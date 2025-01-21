@@ -18,6 +18,7 @@ function decryptRequestBody(req, res, next) {
             return res.status(400).json({ error: 'Failed to decrypt data' });
         }
     }
+ 
     next();
 }
 
@@ -36,7 +37,7 @@ function encryptResponseBody(req, res, next) {
         }
         send.call(this, body);
     };
-
+    
     next();
 }
 

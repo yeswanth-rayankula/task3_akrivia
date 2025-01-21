@@ -13,19 +13,3 @@ exports.down = function(knex) {
 };
 
 
-
-// ALTER TABLE product_to_vendor
-//   DROP FOREIGN KEY product_to_vendor_vendor_id_foreign,  
-//   DROP FOREIGN KEY product_to_vendor_product_id_foreign; 
-
-
-// ALTER TABLE product_to_vendor
-//   ADD CONSTRAINT product_to_vendor_vendor_id_foreign
-//   FOREIGN KEY (vendor_id) REFERENCES vendors(vendor_id)
-//   ON DELETE CASCADE
-
-
-//   ALTER TABLE product_to_vendor
-//   ADD CONSTRAINT product_to_vendor_product_id_foreign
-//   FOREIGN KEY (product_id) REFERENCES products(product_id)
-//   ON DELETE CASCADE

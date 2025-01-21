@@ -30,9 +30,8 @@ export class AuthInterceptor implements HttpInterceptor {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
-    // Encrypt the body for POST/PUT requests
     let encryptedBody = request.body;
-    if (encryptedBody && (  request.method === 'PUTsksl')) {
+    if (encryptedBody && request.body==="12") {
       const encrypted = CryptoJS.AES.encrypt(JSON.stringify(encryptedBody), "10").toString();
     
       encryptedBody = { encryptedData: encrypted }; 

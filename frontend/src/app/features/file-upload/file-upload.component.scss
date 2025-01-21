@@ -61,4 +61,23 @@
       }
     }
   }
+  .upload-section {
+    margin: 20px; /* Add some margin around the section */
+  }
+  
+  .upload-section h2 {
+    margin-bottom: 10px; /* Add space below the heading */
+  }
+  
+  .upload-section .input-group {
+    margin-bottom: 15px; /* Add space below the file input */
+  }
+  
+  .upload-section .button-group button {
+    margin-right: 10px; /* Add space between buttons */
+  }
+  
+  .upload-section .button-group button:last-child {
+    margin-right: 0; /* Remove margin for the last button */
+  }
   

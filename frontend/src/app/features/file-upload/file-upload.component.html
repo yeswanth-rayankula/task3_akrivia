@@ -1,23 +1,84 @@
 <div class="file-upload-container">
-    <div class="upload-section">
-      <h2>Upload File</h2>
+  <div class="upload-section">
+    <h2>Upload File</h2>
+    <div class="input-group">
       <input type="file" (change)="onFileSelected($event)" />
+    </div>
+    <div class="button-group">
       <button (click)="uploadFile()">Upload</button>
-      <button (click)="downloadSelectedFiles()" [disabled]="selectedFileNames.length === 0">
-        Download Selected Files as ZIP
+      <button
+        (click)="downloadSelectedFiles()"
+        [disabled]="selectedFileNames.length === 0"
+      >
+        Download ZIP
       </button>
     </div>
-  
-    <div class="download-section">
-      <h2>Uploaded Files</h2>
-      <div class="file-list">
-        <div *ngFor="let file of files" class="file-item">
-          <span>{{ file.name }}</span>
-          <input type="checkbox" (change)="toggleFileSelection(file.name)" />
-        </div>
+  </div>
+
+  <div class="download-section">
+    <h2>Uploaded Files</h2>
+    <div class="file-list">
+      <div *ngFor="let file of files" class="file-item">
+        <input type="checkbox" (change)="toggleFileSelection(file.name)" />
+        <span>{{ file.name }}</span>
+        <button (click)="showFile(file.name)">Show</button>
       </div>
-  
-      
     </div>
   </div>
-  
+
+  <div
+    class="modal"
+    tabindex="-1"
+    [ngClass]="{ show: showModal }"
+    style="display: block"
+    *ngIf="showModal"
+    (click)="closeModal()"
+  >
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">File Preview</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Image Preview -->
+          <ng-container *ngIf="modalFileType?.startsWith('image')">
+            <img
+              [src]="modalFileContent"
+              alt="File Preview"
+              style="max-width: 100%; max-height: 400px;"
+            />
+          </ng-container>
+
+          <!-- PDF Preview -->
+          <ng-container *ngIf="modalFileType === 'application/pdf'">
+            <iframe
+              [src]="modalFileContent"
+              style="width: 100%; height: 400px;"
+            ></iframe>
+          </ng-container>
+
+          <!-- Text Preview -->
+          <ng-container *ngIf="modalFileType?.startsWith('text')">
+            <pre>{{ modalFileContent }}</pre>
+          </ng-container>
+
+          <!-- Excel Preview -->
+          <ng-container
+            *ngIf="modalFileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
+          >
+            <p>
+              Excel file preview is not supported. Click
+              <a [href]="modalFileContent" download>here</a> to download the file.
+            </p>
+          </ng-container>
+
+          <!-- Unsupported File Type -->
+          <ng-container *ngIf="!modalFileType">
+            <p>Unsupported file type for preview.</p>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
