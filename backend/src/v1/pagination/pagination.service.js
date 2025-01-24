@@ -233,20 +233,20 @@ exports.addProduct = async (productData) => {
 
 exports.addItemsToCart = async (items) => {
   try {
-    // Insert each item into the Cart table
+   
     console.log(items);
     const insertPromises = items.map((item) =>
       db('Cart').insert({
         product_name: item.product_name,
         category_name: item.category_name,
         vendor_name: item.vendor_name,
-        quantity_in_stock: item.quantity , 
+        quantity_in_stock: item.quantity_in_stock, 
         unit_price: item.unit_price,
         product_id:item.product_id
       })
     );
 
-    await Promise.all(insertPromises); // Wait for all insertions to complete
+    await Promise.all(insertPromises); 
     return { success: true, message: 'Items added to the cart successfully' };
   } catch (error) {
     console.error('Error in addItemsToCart service:', error.message);
@@ -262,7 +262,7 @@ exports.getCartItems = async () => {
       'vendor_name',
       'quantity_in_stock',
       'unit_price',
-     
+       'product_id'
     );
     return cartItems;
   } catch (error) {
@@ -276,21 +276,21 @@ exports.getCartItems = async () => {
 exports.decreaseCartQuantityAndUpdateStock = async (cartId, productId) => {
   try {
     await db.transaction(async (trx) => {
-      // Decrease the quantity in the Cart table
+      console.log("dg");
       const cartItem = await trx('Cart')
         .where({ Cart_ID: cartId, product_id: productId })
         .first();
 
-      if (!cartItem || cartItem.quantity <= 0) {
+      if (!cartItem || cartItem.quantity_in_stock <= 0) {
         throw new Error('Invalid cart item or quantity already at 0');
       }
 
-      // Decrease the cart quantity
+     
       await trx('Cart')
         .where({ Cart_ID: cartId, product_id: productId })
-        .decrement('quantity', 1);
+        .decrement('quantity_in_stock', 1);
 
-      // Increase the quantity in the Products table
+     
       await trx('Products')
         .where({ product_id: productId })
         .increment('quantity_in_stock', 1);
@@ -304,3 +304,45 @@ exports.decreaseCartQuantityAndUpdateStock = async (cartId, productId) => {
 };
 
 
+
+exports.increaseCartQuantityAndUpdateStock = async (cartId, productId) => {
+  try {
+    await db.transaction(async (trx) => {
+      console.log("dg");
+      const cartItem = await trx('Cart')
+        .where({ Cart_ID: cartId, product_id: productId })
+        .first();
+
+   
+
+     
+      await trx('Cart')
+        .where({ Cart_ID: cartId, product_id: productId })
+        .increment('quantity_in_stock', 1);
+
+     
+      await trx('Products')
+        .where({ product_id: productId })
+        .decrement('quantity_in_stock', 1);
+    });
+
+    return { success: true, message: 'Cart quantity decreased and stock updated' };
+  } catch (error) {
+    console.error('Error in cart service:', error.message);
+    throw new Error('Failed to update cart and stock');
+  }
+};
+
+
+exports.removeItem = async (cartId) => {
+  try {
+    const result = await db('cart')
+      .where({ Cart_ID: cartId })
+      .del();
+
+    return result > 0; // Returns true if rows were affected
+  } catch (error) {
+    logger.error(`Error removing item from cart: ${error.message}`);
+    throw new Error('Database operation failed.');
+  }
+};

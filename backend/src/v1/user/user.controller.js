@@ -2,7 +2,7 @@ const userService = require('./user.service.js');
 
 const getUser = async (req, res) => {
   const userId = req.user.id;
-   console.log(userId);
+  
   try {
     const user = await userService.getUserById(userId);
 

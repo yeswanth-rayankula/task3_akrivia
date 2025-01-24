@@ -1,6 +1,6 @@
 const express = require('express');
 const verifyToken = require('../../middlewares/verifyToken');
-const { getProducts, deleteProduct, editProduct, getCategories, getVendors, addProduct, addItemsToCart, getCartItems, decreaseQuantity } = require('./pagination.controller');
+const { getProducts, deleteProduct, editProduct, getCategories, getVendors, addProduct, addItemsToCart, getCartItems, decreaseQuantity, increaseQuantity, removeFromCart } = require('./pagination.controller');
 
 const router = express.Router();
 
@@ -13,4 +13,6 @@ router.post('/addProduct',addProduct);
 router.post('/cart/addItems',addItemsToCart);
 router.get('/cart/items',getCartItems);
 router.post('/cart/decreaseQuantity', decreaseQuantity);
+router.post('/cart/increaseQuantity', increaseQuantity);
+router.delete('/cart/remove/:id',removeFromCart);
 module.exports = router;

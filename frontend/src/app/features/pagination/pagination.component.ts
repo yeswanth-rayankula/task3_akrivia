@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import * as XLSX from 'xlsx'; // Import XLSX library for Excel
+import * as XLSX from 'xlsx'; 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 export interface InventoryItem {
   product_name: string;
@@ -11,7 +11,7 @@ export interface InventoryItem {
   quantity_in_stock: number;
   unit_price: number;
   isSelected?: boolean;
-  isEditing?: boolean; // To track if the row is in edit mode
+  isEditing?: boolean; 
   editedProductName?: string;
   editedStatus?: string;
   editedCategoryName?: string;
@@ -41,6 +41,7 @@ export class PaginationComponent implements OnInit {
   selectedFile: File | null = null;
   data:any ;
   searchText: string = '';
+  isModalOpen = false;
   constructor(private fb: FormBuilder, private http: HttpClient) {
    
     this.addProductForm = this.fb.group({
@@ -61,13 +62,16 @@ export class PaginationComponent implements OnInit {
 
   isDropdownOpen = false;
   selectedFilters: { [key: string]: boolean } = {};
+ 
+
   toggleDropdown() {
+    console.log("dh");
     this.isDropdownOpen = !this.isDropdownOpen;
   }
-  onCheckboxChange(criteria: string, event: Event) {
+
+  onCheckboxChange(filter: string, event: Event) {
     const checkbox = event.target as HTMLInputElement;
-    this.selectedFilters[criteria] = checkbox.checked;
-    console.log(this.selectedFilters);
+    this.selectedFilters[filter] = checkbox.checked;
   }
 
   filterBy(criteria: string) {
@@ -75,9 +79,6 @@ export class PaginationComponent implements OnInit {
   
     this.isDropdownOpen = false;
   }
-  
-
-
 
   ngOnInit(): void {
     this.loadInventory();
@@ -108,7 +109,7 @@ export class PaginationComponent implements OnInit {
       alert('No file selected.');
       return;
     }
-    // Validate the file type
+  
     const fileType = file.name.split('.').pop();
     if (fileType !== 'xlsx' && fileType !== 'xls') {
       alert('Invalid file type. Please upload an Excel file.');
@@ -125,8 +126,10 @@ export class PaginationComponent implements OnInit {
       this.data = XLSX.utils.sheet_to_json(worksheet);
       console.log('data is ', this.data);
       this.adddata();
+
     };
     reader.readAsArrayBuffer(file);
+    this.loadInventory();
   }
   adddata() {
     this.data.forEach((data:any) => {
@@ -143,10 +146,6 @@ export class PaginationComponent implements OnInit {
     this.loadInventory();
   }
   
-
-
-
-  // Fetch data from API and load it
   loadVendors()
   {
     this.http.get<{ data: any[] }>('http://localhost:4000/api/v1/user/getVendors').subscribe({
@@ -162,7 +161,10 @@ export class PaginationComponent implements OnInit {
    
   }
   loadInventory() {
+    console.log(this.searchText);
+    console.log(this.selectedFilters);
     const queryParams = new URLSearchParams({
+    
       page: this.currentPage.toString(),
       offset: this.itemsPerPage.toString(),
       searchText: this.searchText,  // Send the searchText
@@ -258,7 +260,6 @@ saveEdit(item: any): void {
     item.isEditing = false;
   }
 
-  // Download selected items as an Excel file
   downloadSelectedItems() {
     const selectedItems = this.inventoryData.filter(item => item.isSelected);
     if (selectedItems.length === 0) {
@@ -274,34 +275,25 @@ saveEdit(item: any): void {
     XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
     XLSX.writeFile(wb, 'selected_inventory.xlsx');
   }
-
+  selectedItems:any=[];
   moveToCart() {
-    const selectedItems = this.inventoryData.filter(item => item.isSelected);
-    
-    if (selectedItems.length === 0) {
+   
+    this.selectedItems = this.inventoryData
+      .filter(item => item.isSelected)
+      .map(item => ({ ...item, quantity_in_stock: 0 }));
+  
+   
+    if (this.selectedItems.length === 0) {
       alert('No items selected to move to the cart');
       return;
     }
   
-    this.http.post('http://localhost:4000/api/v1/user/cart/addItems', selectedItems)
-      .subscribe({
-        next: (response) => {
-          console.log('Items added to the cart successfully:', response);
-          this.cartData.push(...selectedItems);
-        
-          selectedItems.forEach(item => {
-            item.quantity_in_stock = 0; 
-            item.isSelected = false; 
-          });
-  
-          alert('Items moved to the cart successfully!');
-        },
-        error: (err) => {
-          console.error('Error moving items to the cart:', err);
-          alert('Failed to move items to the cart');
-        }
-      });
+    // Open the modal
+    this.isModalOpen = true;
+    console.log('Selected Items with Reset Quantities:', this.selectedItems);
   }
+  
+  
   
   
 deleteItem(item: any): void {
@@ -340,12 +332,13 @@ deleteItem(item: any): void {
     if (item.quantity_in_stock > 0) {
       const payload = {
         cartId: item.Cart_ID,
-        productId: item.product_id, // Ensure product_id is passed
+        productId: item.product_id, 
       };
       console.log(payload);
       this.http.post('http://localhost:4000/api/v1/user/cart/decreaseQuantity', payload)
         .subscribe({
           next: (response: any) => {
+            this.loadInventory();
             console.log('Quantity decreased successfully:', response);
             item.quantity_in_stock--; // Update UI to reflect the new quantity
           },
@@ -360,17 +353,48 @@ deleteItem(item: any): void {
   }
   
 
-  increaseQuantity(item: InventoryItem) {
-    item.quantity_in_stock++;
+  increaseQuantity(item: any) {
+    console.log(item);
+  
+      const payload = {
+        cartId: item.Cart_ID,
+        productId: item.product_id, // Ensure product_id is passed
+      };
+      console.log(payload);
+      this.http.post('http://localhost:4000/api/v1/user/cart/increaseQuantity', payload)
+        .subscribe({
+          next: (response: any) => {
+            this.loadInventory();
+            console.log('Quantity increased successfully:', response);
+            item.quantity_in_stock++; // Update UI to reflect the new quantity
+          },
+          error: (err) => {
+            console.error('Error decreasing quantity:', err);
+            alert('Failed to decrease quantity');
+          }
+        });
+      this.loadInventory();
   }
 
   // Remove the item from the cart
-  removeFromCart(item: InventoryItem) {
-    const index = this.cartData.indexOf(item);
-    if (index > -1) {
-      this.cartData.splice(index, 1);
+  removeFromCart(item: any) {
+    console.log(item);
+    const Cart_ID = item.Cart_ID; 
+    this.http.delete(`http://localhost:4000/api/v1/user/cart/remove/${Cart_ID}`).subscribe({
+      next: (response) => {
+        console.log(response);
+  
+        
+        this.loadCart();
+      },
+      error: (error) => {
+        console.error('Error removing item:', error);
+      },
+    });
+    this.loadInventory();
   }
-  }
+  
+  
   openAddProductModal() {
     this.showModal = true;
     this.addProductForm.reset({
@@ -383,7 +407,7 @@ deleteItem(item: any): void {
     }); 
   }
 
-  // Close modal
+ 
   closeModal() {
     this.showModal = false;
   }
@@ -402,7 +426,7 @@ deleteItem(item: any): void {
     console.log(fileType);
     this.http
       .get<{ url: string; fileUrl: string }>(
-        `http://localhost:4000/api/get-presigned-url`,{
+        `http://localhost:4000/api/files/get-presigned-url`,{
           params: { fileName, fileType },
         }
       )
@@ -427,7 +451,7 @@ deleteItem(item: any): void {
       next: () => {
         const objectKey = `${file.name}`;
 
-        this.http.get('http://localhost:4000/api/get-presigned-urls-for-get', {
+        this.http.get('http://localhost:4000/api/files/get-presigned-urls-for-get', {
           params: { fileNames: objectKey }
         }).subscribe(
           (getResponse: any) => {
@@ -475,6 +499,55 @@ deleteItem(item: any): void {
     }
   }
 
+  downloadItem(item: any): void {
+   
+    let content = '';
+    
+  
+    for (const [key, value] of Object.entries(item)) {
+      content += `${key}: ${value}\n`; 
+    }
+  
  
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `item.txt`; 
+    link.click();
+  }
+  closesModal()
+   {
+        this.isModalOpen=false;
+   }
+   incQuantity(item:any)
+   {
+      item.quantity_in_stock++;
+   }
+   decQuantity(item:any)
+   {
+      if(item.quantity_in_stock<=0)
+        alert("not possible");
+      else
+      item.quantity_in_stock--;
+   }
+   save(selectedItems:any)
+   {
+    
+    this.http.post('http://localhost:4000/api/v1/user/cart/addItems', this.selectedItems)
+      .subscribe({
+        next: (response) => {
+          console.log('Items added to the cart successfully:', response);
+          this.closeModal();
+          alert('Items moved to the cart successfully!');
+        },
+        error: (err) => {
+          console.error('Error moving items to the cart:', err);
+          alert('Failed to move items to the cart. Please try again.');
+        },
+      });
+      this.closesModal();
+      this.loadInventory();
+   }
+
 }
 

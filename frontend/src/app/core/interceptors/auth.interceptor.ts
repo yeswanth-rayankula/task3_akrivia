@@ -16,38 +16,43 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor() {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-
-    const isPresignedUrlUpload =  request.url.includes('akv-interns');
-    if (isPresignedUrlUpload) {
+    
+    if(request.url.includes('akv-interns'))
+      return next.handle(request);
+    
+     if(request.url.includes('files'))
         return next.handle(request);
-    }
+   
+    
+   
 
     
     const token = sessionStorage.getItem('authToken');
     let headers = request.headers;
-
+   
     if (token) {
+      console.log(token);
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-
+    console.log(headers);
     let encryptedBody = request.body;
-    if (encryptedBody && request.body==="12") {
-      const encrypted = CryptoJS.AES.encrypt(JSON.stringify(encryptedBody), "10").toString();
-    
+    if (encryptedBody) {
+      const encrypted = CryptoJS.AES.encrypt(JSON.stringify(encryptedBody), '10').toString();
       encryptedBody = { encryptedData: encrypted }; 
     }
 
+   
     const modifiedRequest = request.clone({
       headers,
-      body: encryptedBody
+      body: encryptedBody,
     });
 
     console.log("Request Intercepted:", modifiedRequest);
 
-    // Pass the modified request to the next handler
+   
     return next.handle(modifiedRequest).pipe(
       map((event: HttpEvent<any>) => {
-        // Decrypt the response body if it's encrypted
+  
         if (event instanceof HttpResponse) {
           if (event.body) {
             const decrypted = CryptoJS.AES.decrypt(event.body, "10").toString(CryptoJS.enc.Utf8);

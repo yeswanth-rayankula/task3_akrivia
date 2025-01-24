@@ -1,187 +1,373 @@
-/* General Styles */
 .inventory-container {
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  color: #333;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+
+  // Header Row
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    .title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin: 0;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+
+      .btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        i {
+          font-size: 1.1rem;
+        }
+      }
+
+      .btn-primary {
+        background-color: #6b46c1;
+        border-color: #6b46c1;
+        
+        &:hover {
+          background-color: #553c9a;
+          border-color: #553c9a;
+        }
+      }
+    }
+  }
+
+  // Controls Row
+  .controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    .view-controls {
+      display: flex;
+      gap: 0.75rem;
+
+      .btn {
+        min-width: 100px;
+      }
+    }
+
+    .search-filter {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+
+      .search-box {
+        width: 300px;
+
+        input {
+          border-radius: 0.375rem;
+        }
+      }
+
+      .dropdown {
+        position: relative; // Ensure the dropdown menu is positioned relative to this container
+      
+        .btn {
+          background-color: #007bff;
+          color: #fff;
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+      
+          &:hover {
+            background-color: #0056b3;
+          }
+        }
+      
+        .dropdown-menu {
+          position: absolute; // Position the menu relative to the parent container
+          top: 100%; // Place it below the button
+          left: 0; // Align with the left side of the parent
+          z-index: 1000; // Ensure it appears above other elements
+          display: block;
+          padding: 0.5rem;
+          min-width: 200px; // Minimum width for the menu
+          background-color: #fff;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      
+          li {
+            list-style: none;
+      
+            label {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              cursor: pointer;
+      
+              input[type='checkbox'] {
+                margin: 0; // Remove default margin
+              }
+      
+              &:hover {
+                background-color: #f8f9fa;
+                border-radius: 4px;
+              }
+            }
+          }
+        }
+      }
+      
+    }
+  }
+
+  // Main Content
+  .main-content {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+
+    .table {
+      margin-bottom: 0;
+
+      th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        padding: 1rem;
+      }
+
+      td {
+        vertical-align: middle;
+        padding: 1rem;
+      }
+
+      .product-icon {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 1px solid #e2e8f0;
+      }
+
+      .actions-cell {
+        .btn-group {
+          gap: 0.25rem;
+        }
+      }
+    }
+  }
+
+  // Quantity Controls
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .quantity {
+      min-width: 40px;
+      text-align: center;
+    }
+  }
+
+  // Pagination
+  .pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e2e8f0;
+
+    .page-info {
+      font-weight: 500;
+      color: #4a5568;
+    }
+  }
+
+  // Modal
+  .modal {
+    background-color: rgba(0, 0, 0, 0.5);
+
+    .modal-content {
+      border: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      border-bottom-color: #e2e8f0;
+    }
+  }
+
+  // File input
+  .file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
+// Utility classes
 .btn {
-  padding: 10px 15px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  background-color: #007bff;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn:hover {
-  background-color: #0056b3;
-}
-
-.btn-light {
-  background-color: #f8f9fa;
-  color: #333;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-/* Dropdown Styles */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown .btn {
-  background-color: #6c757d;
-}
-
-.dropdown-menu {
-  display: block;
-  position: absolute;
-  top: 40px;
-  left: 0;
-  background-color: white;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 10px;
-  margin: 0;
-  list-style: none;
-  z-index: 1000;
-  min-width: 150px;
-  border-radius: 4px;
-}
-
-.dropdown-menu li {
-  padding: 8px 10px;
-  cursor: pointer;
-}
-
-.dropdown-menu li:hover {
-  background-color: #f1f1f1;
-}
-
-.dropdown-menu label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  cursor: pointer;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &-primary {
+    background-color: #6b46c1;
+    border-color: #6b46c1;
+    
+    &:hover {
+      background-color: #553c9a;
+      border-color: #553c9a;
+    }
+  }
+
+  &-outline-primary {
+    color: #6b46c1;
+    border-color: #6b46c1;
+    
+    &:hover {
+      background-color: #6b46c1;
+      border-color: #6b46c1;
+    }
+  }
 }
 
-/* Table Styles */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
+// Badge styles
+.badge {
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 600;
+  border-radius: 9999px;
 
-.table th,
-.table td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: left;
-}
+  &.bg-success {
+    background-color: #48bb78;
+  }
 
-.table th {
-  background-color: #f8f9fa;
+  &.bg-danger {
+    background-color: #f56565;
+  }
 }
-
-.product-icon {
-  width: 30px;
-  height: 30px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 1px solid #ccc;
-}
-
-/* Modal Styles */
-.modal {
+.cart-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  z-index: 1050;
-  width: 500px;
-  max-width: 90%;
-}
-
-.modal-dialog {
-  position: relative;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  border-bottom: 1px solid #ccc;
-}
-
-.modal-title {
-  margin: 0;
-  font-size: 18px;
-}
-
-.modal-body {
-  padding: 15px;
-}
-
-.btn-close {
-  border: none;
-  background: none;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.modal .btn-close:hover {
-  color: #ff0000;
-}
-
-/* Pagination Controls */
-.pagination-controls {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); // Semi-transparent black background
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
-  gap: 10px;
+  z-index: 1000;
 }
 
-.pagination-controls .btn {
+.cart-modal {
+  background: #fff; // White modal background
+  padding: 20px;
+  border-radius: 10px;
+  width: 600px;
+  max-width: 90%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); // Box shadow for depth
+}
+
+.cart-title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+
+  th,
+  td {
+    text-align: left;
+    padding: 10px;
+    border: 1px solid #ddd; // Light border for table cells
+  }
+
+  th {
+    background-color: #f8f9fa; // Light gray background for headers
+    font-weight: bold;
+  }
+
+  td {
+    font-size: 0.9rem;
+  }
+}
+
+.cart-btn {
   padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
-/* Responsive Styles */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.cart-btn-increase {
+  background-color: #4caf50; // Green button for increasing quantity
+  color: #fff;
 
-  .table {
-    font-size: 12px;
+  &:hover {
+    background-color: #45a049; // Darker green on hover
   }
+}
 
-  .modal {
-    width: 90%;
+.cart-btn-decrease {
+  background-color: #f44336; // Red button for decreasing quantity
+  color: #fff;
+
+  &:hover {
+    background-color: #e53935; // Darker red on hover
   }
+}
+
+.cart-btn-cancel {
+  background-color:black; // Gray button for cancel
+  color: white;
+
+  &:hover {
+    background-color: #757575; // Darker gray on hover
+  }
+}
+.cart-btn-save {
+  background-color:blue; 
+  color: white;
+
+  &:hover {
+    background-color: #757575; 
+  }
+}
+
+.cart-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }

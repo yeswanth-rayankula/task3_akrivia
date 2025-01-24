@@ -10,8 +10,5 @@ const generateAccessToken = (payload) => {
 };
 
 
-const generateRefreshToken = (payload) => {
-  return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: '7d' }); 
-};
 
-module.exports = { generateAccessToken, generateRefreshToken };
+module.exports = { generateAccessToken};

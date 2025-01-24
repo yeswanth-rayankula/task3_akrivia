@@ -64,7 +64,7 @@ export class NavbarComponent implements OnInit {
     console.log('Selected file:', this.selectedFile);
   
 
-    this.http.get('http://localhost:4000/api/get-presigned-url', {
+    this.http.get('http://localhost:4000/api/files/get-presigned-url', {
       params: { fileName, fileType },
     }).subscribe(
       (response: any) => {
@@ -80,7 +80,7 @@ export class NavbarComponent implements OnInit {
   
             
             const objectKey = `${fileName}`; 
-            this.http.get('http://localhost:4000/api/get-presigned-urls-for-get', {
+            this.http.get('http://localhost:4000/api/files/get-presigned-urls-for-get', {
               params: { fileNames: objectKey },
             }).subscribe(
               (getResponse: any) => {

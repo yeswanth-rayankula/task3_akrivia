@@ -1,8 +1,11 @@
 const productService = require('./pagination.service');
 const logger = require('../../../logger');
+const { productSchema, paginationSchema } = require('./pagination.utils');
 
 exports.getProducts = async (req, res) => {
+  
   try {
+
     const page = parseInt(req.query.page) || 1;
     const offset = parseInt(req.query.offset) || 5;
     const searchText = req.query.searchText || '';
@@ -74,6 +77,7 @@ exports.getVendors = async (req, res) => {
 };
 
 exports.addProduct = async (req, res) => {
+  
   try {
     const { product_name, category_name, vendor_name, quantity_in_stock, unit_price, product_image, status } = req.body;
 
@@ -125,6 +129,8 @@ exports.getCartItems = async (req, res) => {
 exports.decreaseQuantity = async (req, res) => {
   const { cartId, productId } = req.body;
 
+   console.log(cartId,productId);
+
   if (!cartId || !productId) {
     return res.status(400).json({ message: 'cartId and productId are required' });
   }
@@ -135,5 +141,38 @@ exports.decreaseQuantity = async (req, res) => {
   } catch (error) {
     console.error('Error in decreaseQuantity controller:', error.message);
     res.status(500).json({ message: 'Failed to decrease cart quantity and update stock', error: error.message });
+  }
+};
+exports.increaseQuantity = async (req, res) => {
+  const { cartId, productId } = req.body;
+
+   console.log(cartId,productId);
+
+  if (!cartId || !productId) {
+    return res.status(400).json({ message: 'cartId and productId are required' });
+  }
+
+  try {
+    const result = await productService.increaseCartQuantityAndUpdateStock(cartId, productId);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error in decreaseQuantity controller:', error.message);
+    res.status(500).json({ message: 'Failed to decrease cart quantity and update stock', error: error.message });
+  }
+};
+exports.removeFromCart = async (req, res) => {
+  try {
+    console.log(req.params.id);
+    const itemId = req.params.id;
+    console.log(itemId);
+    const result = await productService.removeItem(itemId);
+
+    if (result) {
+      res.status(200).json({ message: 'Item removed from cart successfully.' });
+    } else {
+      res.status(404).json({ message: 'Item not found in cart.' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred.', error: error.message });
   }
 };

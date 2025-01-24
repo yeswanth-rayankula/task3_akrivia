@@ -1,10 +1,11 @@
-<div class="inventory-container">
-  <!-- Header -->
+<!-- <div class="inventory-container">
+  <div class="text-muted">Inventory Movements</div>
   <div class="header">
-    <div>
-    <button (click)="changeViewMode('cart')">Cart</button>
-    <button (click)="changeViewMode('viewAll')">View All</button>
-  </div>
+    <div >
+      <button class="btn btn-primary" (click)="changeViewMode('viewAll')">View All</button>
+      <button class="btn btn-secondary" (click)="changeViewMode('cart')">Cart</button>
+    </div>
+    
     <br>
     <div class="action-buttons" *ngIf="viewMode === 'viewAll'">
       <button class="btn" (click)="downloadSelectedItems()">Download</button>
@@ -18,6 +19,8 @@
         />
       </button>
       <div class="container">
+        <button class="btn" (click)="moveToCart()">Move to Cart</button>
+        <button class="btn btn-primary" (click)="openAddProductModal()">Add Product</button>
         <input type="text" placeholder="Search" [(ngModel)]="searchText" (ngModelChange)="loadInventory()" />
 
         <div class="dropdown">
@@ -40,13 +43,11 @@
             </li>
           </ul>
         </div>
-        <button class="btn" (click)="moveToCart()">Move to Cart</button>
-        <button class="btn btn-primary" (click)="openAddProductModal()">Add Product</button>
+        
       </div>
     </div>
     <br>
     <div class="main-content">
-      <!-- Inventory Items -->
       <div *ngIf="viewMode === 'viewAll'">
         <table class="table">
           <thead>
@@ -120,13 +121,14 @@
               <td>
                 <button *ngIf="item.isEditing" class="btn-icon" (click)="saveEdit(item)">✔️</button>
                 <button *ngIf="item.isEditing" class="btn-icon" (click)="cancelEdit(item)">❌</button>
-                <button *ngIf="!item.isEditing" class="btn-icon" (click)="toggleEdit(item)">✏️</button>
-                <button class="btn-icon" (click)="deleteItem(item)">🗑️</button>
+                <button *ngIf="!item.isEditing" (click)="toggleEdit(item)"><img src="assets/pencil-square.svg" alt=""></button>
+                <button (click)="downloadItem(item)"><img src="assets/trash.svg" alt=""></button>
+                <button (click)="deleteItem(item)"><img src="assets/download.svg" alt=""></button>
               </td>
             </tr>
           </tbody>
         </table>
-        <!-- Pagination Controls -->
+       
         <div class="pagination-controls">
           <button class="btn" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
           <span>{{ currentPage }} / {{ totalPages }}</span>
@@ -186,7 +188,6 @@
                 </option>
               </select>
             </div>
-            <!-- Vendor Dropdown -->
             <div class="mb-3">
               <label for="vendor_id" class="form-label">Vendor</label>
               <select id="vendor_id" formControlName="vendor_name" class="form-control">
@@ -195,26 +196,315 @@
                 </option>
               </select>
             </div>
-            <!-- Quantity in Stock -->
             <div class="mb-3">
               <label for="quantity_in_stock" class="form-label">Quantity in Stock</label>
               <input id="quantity_in_stock" formControlName="quantity_in_stock" type="number" class="form-control" placeholder="Enter quantity" />
             </div>
-            <!-- Unit Price -->
             <div class="mb-3">
               <label for="unit_price" class="form-label">Unit Price</label>
               <input id="unit_price" formControlName="unit_price" type="number" class="form-control" placeholder="Enter unit price" />
             </div>
-            <!-- Product Image -->
             <div class="mb-3">
               <label for="product_image" class="form-label">Upload Product Image</label>
               <input id="product_image" type="file" class="form-control" (change)="onFileSelected($event)" />
             </div>
-            <!-- Submit Button -->
             <button type="submit" class="btn btn-success" [disabled]="addProductForm.invalid || !selectedFile">Add Product</button>
           </form>
         </div>
       </div>
+    </div>
+  </div>
+</div> -->
+
+<div class="inventory-container">
+  <div class="header-row">
+    <h1 class="title">Inventory Movements</h1>
+    <div class="action-buttons">
+      <button class="btn btn-outline-primary" (click)="moveToCart()">
+        <i class="bi bi-cart-plus"></i> Move to Cart
+      </button>
+      <button class="btn btn-outline-primary" (click)="downloadSelectedItems()">
+        <i class="bi bi-download"></i> Download All
+      </button>
+      <button class="btn btn-outline-primary position-relative">
+        <i class="bi bi-upload"></i> Import
+        <input
+          type="file"
+          (change)="onfilechange($event)"
+          class="file-input"
+        />
+      </button>
+      <button class="btn btn-primary" (click)="openAddProductModal()">
+        <i class="bi bi-plus-lg"></i> Add Product
+      </button>
+    </div>
+  </div>
+
+  <!-- Controls Row -->
+  <div class="controls-row">
+    <div class="view-controls">
+      <button 
+        class="btn" 
+        [ngClass]="{'btn-primary': viewMode === 'viewAll', 'btn-outline-primary': viewMode !== 'viewAll'}"
+        (click)="changeViewMode('viewAll')"
+      >
+        View All
+      </button>
+      <button 
+        class="btn" 
+        [ngClass]="{'btn-primary': viewMode === 'cart', 'btn-outline-primary': viewMode !== 'cart'}"
+        (click)="changeViewMode('cart')"
+      >
+        Cart
+      </button>
+    </div>
+    
+    <div class="search-filter">
+      <input type="text" placeholder="Search" [(ngModel)]="searchText" (ngModelChange)="loadInventory()" />
+
+      <div class="dropdown">
+        <button class="btn" (click)="toggleDropdown()">Filter</button>
+        <ul class="dropdown-menu" *ngIf="isDropdownOpen">
+          <li>
+            <label>
+              <input type="checkbox" (change)="onCheckboxChange('category_name', $event)" /> Category
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" (change)="onCheckboxChange('vendor_name', $event)" /> Vendors
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" (change)="onCheckboxChange('product_name', $event)" /> Product Name
+            </label>
+          </li>
+        </ul>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- View All Table -->
+    <div class="table-responsive" *ngIf="viewMode === 'viewAll'">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th><input type="checkbox" (change)="selectAll($event)" /></th>
+            <th>Image</th>
+            <th>Product Name</th>
+            <th>Status</th>
+            <th>Category</th>
+            <th>Vendors</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of inventoryData">
+            <td><input type="checkbox" [(ngModel)]="item.isSelected" /></td>
+            <td>
+              <img
+                [src]="item.product_image || 'favicon.ico'"
+                [alt]="item.product_name || 'Default Icon'"
+                class="product-icon"
+              />
+            </td>
+            <td *ngIf="!item.isEditing">{{ item.product_name }}</td>
+            <td *ngIf="item.isEditing">
+              <input class="form-control form-control-sm" [(ngModel)]="item.editedProductName" placeholder="Enter product name" />
+            </td>
+            <td *ngIf="!item.isEditing">
+              <span [ngClass]="{'badge bg-success': item.status === '1', 'badge bg-danger': item.status === '0'}">
+                {{ item.status === '1' ? 'Available' : 'Not Available' }}
+              </span>
+            </td>
+            <td *ngIf="item.isEditing">
+              <select class="form-select form-select-sm" [(ngModel)]="item.editedStatus">
+                <option [value]="1">Available</option>
+                <option [value]="0">Not Available</option>
+              </select>
+            </td>
+            <td *ngIf="!item.isEditing">{{ item.category_name }}</td>
+            <td *ngIf="item.isEditing">
+              <select class="form-select form-select-sm" [(ngModel)]="item.editedCategoryName">
+                <option *ngFor="let category of categories" [value]="category.category_name">
+                  {{ category.category_name }}
+                </option>
+              </select>
+            </td>
+            <td *ngIf="!item.isEditing">{{ item.vendor_name }}</td>
+            <td *ngIf="item.isEditing">
+              <select class="form-select form-select-sm" [(ngModel)]="item.editedVendorName">
+                <option *ngFor="let vendor of vendors" [value]="vendor.vendor_name">
+                  {{ vendor.vendor_name }}
+                </option>
+              </select>
+            </td>
+            <td *ngIf="!item.isEditing">{{ item.quantity_in_stock }}</td>
+            <td *ngIf="item.isEditing">
+              <input class="form-control form-control-sm" type="number" [(ngModel)]="item.editedQuantity"/>
+            </td>
+            <td *ngIf="!item.isEditing">{{ item.unit_price }}</td>
+            <td *ngIf="item.isEditing">
+              <input class="form-control form-control-sm" type="number" [(ngModel)]="item.editedUnitPrice"/>
+            </td>
+            <td class="actions-cell">
+              <div class="btn-group">
+                <button *ngIf="item.isEditing" class="btn btn-sm btn-success" (click)="saveEdit(item)">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+                <button *ngIf="item.isEditing" class="btn btn-sm btn-danger" (click)="cancelEdit(item)">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+                <button *ngIf="!item.isEditing" class="btn btn-sm btn-outline-primary" (click)="toggleEdit(item)"><img src="assets/pencil-square.svg" alt="">
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteItem(item)"> <img src="assets/trash.svg" alt="">
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" (click)="downloadItem(item)"><img src="assets/download.svg" alt="">
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination-controls">
+        <button class="btn btn-outline-primary" (click)="previousPage()" [disabled]="currentPage === 1">
+          <i class="bi bi-chevron-left"></i> Previous
+        </button>
+        <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn btn-outline-primary" (click)="nextPage()" [disabled]="currentPage === totalPages">
+          Next <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+
+    <div class="table-responsive" *ngIf="viewMode === 'cart'">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Vendor</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of cartData">
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.category_name }}</td>
+            <td>{{ item.vendor_name }}</td>
+            <td>
+              <div class="quantity-controls">
+                <button class="btn btn-sm btn-outline-secondary" (click)="decreaseQuantity(item)">-</button>
+                <span class="quantity">{{ item.quantity_in_stock }}</span>
+                <button class="btn btn-sm btn-outline-secondary" (click)="increaseQuantity(item)">+</button>
+              </div>
+            </td>
+            <td>{{ item.unit_price | currency }}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger" (click)="removeFromCart(item)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal" tabindex="-1" [ngClass]="{ 'show': showModal }" [style.display]="showModal ? 'block' : 'none'" (click)="closeModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Product</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="addProductForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="product_name" class="form-label">Product Name</label>
+              <input id="product_name" formControlName="product_name" class="form-control" placeholder="Enter product name" />
+            </div>
+            <div class="mb-3">
+              <label for="category_id" class="form-label">Category</label>
+              <select id="category_id" formControlName="category_name" class="form-control">
+                <option *ngFor="let category of categories" [value]="category.category_name">
+                  {{ category.category_name }}
+                </option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="vendor_id" class="form-label">Vendor</label>
+              <select id="vendor_id" formControlName="vendor_name" class="form-control">
+                <option *ngFor="let vendor of vendors" [value]="vendor.vendor_name">
+                  {{ vendor.vendor_name }}
+                </option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="quantity_in_stock" class="form-label">Quantity in Stock</label>
+              <input id="quantity_in_stock" formControlName="quantity_in_stock" type="number" class="form-control" placeholder="Enter quantity" />
+            </div>
+            <div class="mb-3">
+              <label for="unit_price" class="form-label">Unit Price</label>
+              <input id="unit_price" formControlName="unit_price" type="number" class="form-control" placeholder="Enter unit price" />
+            </div>
+            <div class="mb-3">
+              <label for="product_image" class="form-label">Upload Product Image</label>
+              <input id="product_image" type="file" class="form-control" (change)="onFileSelected($event)" />
+            </div>
+            <div class="text-end">
+              <button type="submit" class="btn btn-primary" [disabled]="addProductForm.invalid || !selectedFile">
+                Add Product
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cart-overlay" *ngIf="isModalOpen">
+  <div class="cart-modal">
+    <h2 class="cart-title">Selected Items</h2>
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Vendors</th>
+          <th>Quantity</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of selectedItems">
+          <td>{{ item.product_name }}</td>
+          <td>{{ item.category_name }}</td>
+          <td>{{ item.vendor_name }}</td>
+          <td>{{ item.quantity_in_stock }}</td>
+          <td>
+            <button class="cart-btn cart-btn-increase" (click)="incQuantity(item)">+</button>
+            <button class="cart-btn cart-btn-decrease" (click)="decQuantity(item)">-</button>
+            
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="cart-actions">
+      <button class="cart-btn cart-btn-cancel" (click)="closesModal()">Cancel</button>
+      <button class="cart-btn cart-btn-save" (click)="save(selectedItems)" data-bs-dismiss = "modal">Save</button>
     </div>
   </div>
 </div>

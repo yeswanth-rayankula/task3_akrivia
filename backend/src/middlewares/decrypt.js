@@ -1,15 +1,16 @@
 const crypto = require('crypto-js');
 
-// Decrypt the request body
+
 function decryptRequestBody(req, res, next) {
   
-    if (req.body && req.method=="PUT" ) {
+    if (req.body.encryptedData  ) {
+      
         try {
-            const bytes = crypto.AES.decrypt(req.body, "10");
+            const bytes = crypto.AES.decrypt(req.body.encryptedData, "10");
             const decryptedString = bytes.toString(crypto.enc.Utf8);
 
             if (!decryptedString) {
-                throw new Error('Decrypted string is empty or invalid');
+                next();
             }
 
             req.body = JSON.parse(decryptedString);
@@ -22,7 +23,7 @@ function decryptRequestBody(req, res, next) {
     next();
 }
 
-// Encrypt the response body
+
 function encryptResponseBody(req, res, next) {
     const send = res.send;
     res.send = function (body) {

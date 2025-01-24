@@ -24,7 +24,7 @@ export class FileUploadComponent implements OnInit {
   }
 
   fetchUploadedFiles(): void {
-    this.http.get<any[]>('http://localhost:4000/api/files').subscribe(
+    this.http.get<any[]>('http://localhost:4000/api/files/files').subscribe(
       (response) => {
         this.files = response;
       },
@@ -47,7 +47,7 @@ export class FileUploadComponent implements OnInit {
       const fileType = this.selectedFile.type;
 
       this.http
-        .get('http://localhost:4000/api/get-presigned-url', {
+        .get('http://localhost:4000/api/files/get-presigned-url', {
           params: { fileName, fileType },
         })
         .subscribe(
@@ -85,9 +85,10 @@ export class FileUploadComponent implements OnInit {
   }
 
   showFile(fileName: string): void {
+    
     this.http
       .get<{ urls: { fileName: string; url: string }[] }>(
-        'http://localhost:4000/api/get-presigned-urls-for-get',
+        'http://localhost:4000/api/files/get-presigned-urls-for-get',
         {
           params: { fileNames: fileName },
         }
@@ -164,7 +165,7 @@ export class FileUploadComponent implements OnInit {
   downloadSelectedFiles(): void {
     if (this.selectedFileNames.length > 0) {
       // Step 1: Fetch pre-signed URLs for the selected files
-      this.http.get<{ urls: { fileName: string, url: string }[] }>('http://localhost:4000/api/get-presigned-urls-for-get', {
+      this.http.get<{ urls: { fileName: string, url: string }[] }>('http://localhost:4000/api/files/get-presigned-urls-for-get', {
         params: { fileNames: this.selectedFileNames.join(',') } // Send selected file names as a comma-separated query parameter
       }).subscribe({
         next: (response) => {
