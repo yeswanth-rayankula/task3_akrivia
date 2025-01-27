@@ -16,9 +16,7 @@ export class LoginService {
   
   login(identifier: string, password: string): Observable<any> {
     const loginData = { identifier, password };
-    return this.http.post<any>(this.apiUrl, loginData).pipe(
-      catchError(this.handleError)  
-    );
+    return this.http.post<any>(this.apiUrl, loginData);
   }
 
   
@@ -26,18 +24,11 @@ export class LoginService {
     sessionStorage.setItem('authToken', token); 
   }
 
- 
-  private handleError(error: any): Observable<never> {
-    let errorMessage = 'An unknown error occurred!';
-    if (error.error instanceof ErrorEvent) {
-   
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-    }
-    return throwError(errorMessage);
+  r_storeToken(token: string): void {
+    sessionStorage.setItem('r_authToken', token); 
   }
+ 
+ 
 
   
     

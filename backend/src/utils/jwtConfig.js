@@ -9,6 +9,8 @@ const generateAccessToken = (payload) => {
   return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: '5h' });
 };
 
+const generateRefreshToken = (payload) => {
+  return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+};
 
-
-module.exports = { generateAccessToken};
+module.exports = { generateAccessToken,generateRefreshToken};

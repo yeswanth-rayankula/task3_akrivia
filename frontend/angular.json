@@ -29,6 +29,7 @@
             ],
             "styles": [
   "src/styles.scss",
+  "node_modules/ngx-toastr/toastr.css",
   "node_modules/bootstrap/dist/css/bootstrap.min.css"
 ],
 "scripts": [
@@ -42,13 +43,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "5000kb",
+                  "maximumError": "10mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "20kb",
+                  "maximumError": "40kb"
                 }
               ],
               "fileReplacements": [

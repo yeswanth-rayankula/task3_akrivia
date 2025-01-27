@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import * as XLSX from 'xlsx'; 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { InventoryService } from './inventory.service';
+import { computeStyles } from '@popperjs/core';
+
+
 export interface InventoryItem {
   product_name: string;
   product_image:string;
@@ -18,6 +22,7 @@ export interface InventoryItem {
   editedVendorName?: string;
   editedQuantity?: number;
   editedUnitPrice?: number;
+  previewImage?: string; 
 }
 
 @Component({
@@ -42,7 +47,9 @@ export class PaginationComponent implements OnInit {
   data:any ;
   searchText: string = '';
   isModalOpen = false;
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  selectedItems:any=[];
+
+  constructor(private fb: FormBuilder, private http: HttpClient,private inventoryService:InventoryService) {
    
     this.addProductForm = this.fb.group({
       product_name: ['', [Validators.required]],
@@ -51,7 +58,7 @@ export class PaginationComponent implements OnInit {
       quantity_in_stock: [0, [Validators.required, Validators.min(0)]],
       unit_price: [0, [Validators.required, Validators.min(0)]],
      
-      status: ['1', [Validators.required]] // Default status: Active
+      status: ['1', [Validators.required]] 
     });
     (window as any).changeViewMode = this.changeViewMode.bind(this);
   }
@@ -87,13 +94,16 @@ export class PaginationComponent implements OnInit {
     this.loadCart();
   }
   loadCart() {
+    console.log(this.searchText);
+    console.log(this.selectedFilters);
     console.log("hiell");
-    this.http.get<{ success: boolean; data: any[] }>('http://localhost:4000/api/v1/user/cart/items')
+    this.inventoryService.getCartItems()
       .subscribe({
         next: (response) => {
           console.log("hiell");
           console.log(response.data);
           this.cartData = response.data;
+          this.applyFilters();
           console.log('Cart items loaded:', this.cartData);
         },
         error: (err) => {
@@ -101,6 +111,38 @@ export class PaginationComponent implements OnInit {
         }
       });
   }
+  
+  applyFilters() {
+    if (this.searchText!="") {
+     
+      this.cartData = this.cartData.filter(item => {
+        return Object.keys(this.selectedFilters).some(column => {
+          if (this.selectedFilters[column] && item[column as keyof typeof item]) {
+            return (item[column as keyof typeof item] as string)
+              .toString()
+              .toLowerCase()
+              .includes(this.searchText.toLowerCase());
+          }
+          return false;
+        });
+      });
+    }
+   
+  }
+  
+  handleModelChangess() {
+
+    const trimmedSearchText = this.searchText.trim();
+
+    if (this.viewMode === 'viewAll' && trimmedSearchText !== '') {
+      console.log('Calling loadInventory()');
+      this.loadInventory();
+    } else if (this.viewMode === 'cart' && trimmedSearchText !== '') {
+      console.log('Calling applyFilters()');
+      this.applyFilters();
+    } 
+  }
+  
   onfilechange(event: any): void {
 
     const file = event.target.files[0];
@@ -116,7 +158,7 @@ export class PaginationComponent implements OnInit {
       return;
     }
     const reader = new FileReader();
-    console.log(reader);
+   
     reader.onload = (e: any) => {
       console.log('Reader onload called!');
       const data = new Uint8Array(e.target.result);
@@ -129,13 +171,14 @@ export class PaginationComponent implements OnInit {
 
     };
     reader.readAsArrayBuffer(file);
-    this.loadInventory();
+   
   }
   adddata() {
     this.data.forEach((data:any) => {
-      this.http.post('http://localhost:4000/api/v1/user/addProduct', data)
+      this.inventoryService.addProduct(data)
         .subscribe({
           next: (response) => {
+            this.loadInventory();
             console.log('Product added successfully:', response);
           },
           error: (err) => {
@@ -143,12 +186,12 @@ export class PaginationComponent implements OnInit {
           }
         });
     });
-    this.loadInventory();
+
   }
   
   loadVendors()
   {
-    this.http.get<{ data: any[] }>('http://localhost:4000/api/v1/user/getVendors').subscribe({
+    this.inventoryService.getVendors().subscribe({
       next: (response) => {
         this.vendors = response.data; 
         console.log('vendors loaded:', this.vendors);
@@ -167,16 +210,13 @@ export class PaginationComponent implements OnInit {
     
       page: this.currentPage.toString(),
       offset: this.itemsPerPage.toString(),
-      searchText: this.searchText,  // Send the searchText
+      searchText: this.searchText, 
       ...Object.entries(this.selectedFilters) // Send filters as query parameters
         .filter(([, value]) => value) // Only include filters with active values
         .reduce((acc, [key, value]) => ({ ...acc, [key]: value.toString() }), {}),
     });
   
-    this.http
-      .get<{ data: { products: InventoryItem[]; totalProducts: number } }>(
-        `http://localhost:4000/api/v1/user/getProducts?${queryParams.toString()}`
-      )
+      this.inventoryService.getInventory(queryParams)
       .subscribe({
         next: (response) => {
           console.log(response.data.products);
@@ -196,7 +236,7 @@ export class PaginationComponent implements OnInit {
   
   loadCategories()
   {
-    this.http.get<{ data: any[] }>('http://localhost:4000/api/v1/user/getCategories').subscribe({
+    this.inventoryService.getCategories().subscribe({
       next: (response) => {
         this.categories = response.data; 
         console.log('Categories loaded:', this.categories);
@@ -224,9 +264,7 @@ export class PaginationComponent implements OnInit {
     item.editedQuantity = item.quantity_in_stock;
     item.editedUnitPrice = item.unit_price;
   }
-
-  // Save edited values
-  // pagination.component.ts
+ 
 saveEdit(item: any): void {
   const updatedProduct = {
     product_name: item.editedProductName,
@@ -235,8 +273,9 @@ saveEdit(item: any): void {
     vendor_name: item.editedVendorName,
     quantity_in_stock: item.editedQuantity,
     unit_price: item.editedUnitPrice,
+    product_image: item.product_image,
   };
-
+  console.log(updatedProduct);
   this.http.put(`http://localhost:4000/api/v1/user/editProduct/${item.product_id}`, updatedProduct).subscribe(
     (response) => {
     
@@ -247,9 +286,15 @@ saveEdit(item: any): void {
     }
   );
 }
+validatePositiveNumber(item: any): void {
+  if (item.editedQuantity < 0) {
+   
+    alert('Only positive numbers are allowed.');
+    item.editedQuantity = 0; 
+  }
+}
 
 
-  // Cancel editing and revert changes
   cancelEdit(item: InventoryItem): void {
     item.editedProductName = item.product_name;
     item.editedStatus = item.status;
@@ -275,7 +320,7 @@ saveEdit(item: any): void {
     XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
     XLSX.writeFile(wb, 'selected_inventory.xlsx');
   }
-  selectedItems:any=[];
+ 
   moveToCart() {
    
     this.selectedItems = this.inventoryData
@@ -288,7 +333,7 @@ saveEdit(item: any): void {
       return;
     }
   
-    // Open the modal
+   
     this.isModalOpen = true;
     console.log('Selected Items with Reset Quantities:', this.selectedItems);
   }
@@ -299,7 +344,7 @@ saveEdit(item: any): void {
 deleteItem(item: any): void {
   this.http.delete(`http://localhost:4000/api/v1/user/deleteProduct/${item.product_id}`).subscribe(
     (response) => {
-      // Remove the item from the inventoryData array on success
+     
       this.loadInventory();
     },
     (error) => {
@@ -309,7 +354,6 @@ deleteItem(item: any): void {
 }
 
 
-  // Pagination controls
   previousPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
@@ -335,7 +379,7 @@ deleteItem(item: any): void {
         productId: item.product_id, 
       };
       console.log(payload);
-      this.http.post('http://localhost:4000/api/v1/user/cart/decreaseQuantity', payload)
+      this.inventoryService.decreaseQuantity(payload)
         .subscribe({
           next: (response: any) => {
             this.loadInventory();
@@ -379,8 +423,9 @@ deleteItem(item: any): void {
   // Remove the item from the cart
   removeFromCart(item: any) {
     console.log(item);
-    const Cart_ID = item.Cart_ID; 
-    this.http.delete(`http://localhost:4000/api/v1/user/cart/remove/${Cart_ID}`).subscribe({
+    const Cart_ID = item.Cart_ID;
+    const product_id=item.product_id; 
+    this.http.delete(`http://localhost:4000/api/v1/user/cart/remove/${Cart_ID}?product_id=${product_id}`).subscribe({
       next: (response) => {
         console.log(response);
   
@@ -538,6 +583,9 @@ deleteItem(item: any): void {
         next: (response) => {
           console.log('Items added to the cart successfully:', response);
           this.closeModal();
+          this.loadCart();
+          console.log("dfgh");
+          this.loadInventory();
           alert('Items moved to the cart successfully!');
         },
         error: (err) => {
@@ -545,9 +593,73 @@ deleteItem(item: any): void {
           alert('Failed to move items to the cart. Please try again.');
         },
       });
+
       this.closesModal();
-      this.loadInventory();
+     
+    
    }
+   onImageEdit(event: any, item: InventoryItem): void {
+    const file = event.target.files[0];
+    if (file) {
+      // Preview the new image
+      const reader = new FileReader();
+      reader.onload = () => {
+        item.previewImage = reader.result as string; // Display preview
+      };
+      reader.readAsDataURL(file);
+  
+      // Upload the image to S3
+      const fileName = file.name;
+      const fileType = file.type;
+  
+      this.http
+        .get<{ url: string; fileUrl: string }>(
+          `http://localhost:4000/api/files/get-presigned-url`,
+          { params: { fileName, fileType } }
+        )
+        .subscribe({
+          next: (response) => {
+            const presignedUrl = response.url;
+            this.uploadEditedImage(presignedUrl, file, item);
+          },
+          error: (err) => {
+            console.error('Error getting pre-signed URL for editing:', err);
+            alert('Failed to upload image. Please try again.');
+          },
+        });
+    }
+  }
+  
+  uploadEditedImage(presignedUrl: string, file: File, item: InventoryItem): void {
+    this.http
+      .put(presignedUrl, file, { headers: { 'Content-Type': file.type } })
+      .subscribe({
+        next: () => {
+          const objectKey = `${file.name}`;
+          this.http
+            .get<{ urls: { url: string }[] }>(
+              `http://localhost:4000/api/files/get-presigned-urls-for-get`,
+              { params: { fileNames: objectKey } }
+            )
+            .subscribe({
+              next: (response) => {
+                const getUrl = response.urls[0].url; // Get the accessible URL
+                item.product_image = getUrl; 
+              
+                alert('Image updated successfully!');
+              },
+              error: (err) => {
+                console.error('Error getting access URL for edited image:', err);
+              },
+            });
+        },
+        error: (err) => {
+          console.error('Error uploading edited image to S3:', err);
+          alert('Failed to upload image. Please try again.');
+        },
+      });
+  }
+  
 
 }
 

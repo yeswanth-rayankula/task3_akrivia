@@ -4,7 +4,7 @@ const { registerSchema } = require('./register.utils');
 
 
 
-const registerUser = async (req, res) => {
+const registerUser = async (req, res,next) => {
   console.log('Registering new user:', req.body);
   const { error } = registerSchema.validate(req.body);
   if (error) {
@@ -17,7 +17,9 @@ const registerUser = async (req, res) => {
     const newUser = await registerNewUser(first_name, last_name, email, password);
     res.status(201).json({ message: 'User registered successfully', user: newUser });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    err.statusCode=401;
+    
+    next(err);
   }
 };
 

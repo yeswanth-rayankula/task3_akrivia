@@ -113,7 +113,9 @@ exports.addItemsToCart = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error('Error in addItemsToCart controller:', error.message);
-    res.status(500).json({ message: 'Failed to add items to the cart', error: error.message });
+ 
+
+     res.status(500).json({ message: 'Failed to add items to the cart', error: error.message });
   }
 };
 exports.getCartItems = async (req, res) => {
@@ -162,10 +164,9 @@ exports.increaseQuantity = async (req, res) => {
 };
 exports.removeFromCart = async (req, res) => {
   try {
-    console.log(req.params.id);
-    const itemId = req.params.id;
-    console.log(itemId);
-    const result = await productService.removeItem(itemId);
+    const { Cart_ID } = req.params;
+    const { product_id } = req.query;
+    const result = await productService.removeItem(Cart_ID,product_id);
 
     if (result) {
       res.status(200).json({ message: 'Item removed from cart successfully.' });

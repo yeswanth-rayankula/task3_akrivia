@@ -1,6 +1,7 @@
 const knex = require('knex');
 const knexConfig = require('../../../knexfile');
 const logger = require('../../../logger');
+const { productSchema } = require('./pagination.utils');
 
 const db = knex(knexConfig.development);
 
@@ -95,7 +96,8 @@ exports.deleteProduct = (productId) => {
 };
 
 exports.editProduct = async (productId, updatedProduct) => {
-  const { product_name, status, category_name, vendor_name, quantity_in_stock, unit_price } = updatedProduct;
+  console.log(updatedProduct);
+  const { product_name, status, category_name, vendor_name, quantity_in_stock, unit_price ,product_image} = updatedProduct;
   const price = parseFloat(unit_price);
 
   try {
@@ -123,6 +125,7 @@ exports.editProduct = async (productId, updatedProduct) => {
             category_id,
             quantity_in_stock,
             unit_price: price,
+            product_image:product_image
           });
 
         const vendor = await trx('vendors').where('vendor_name', vendor_name).first();
@@ -233,24 +236,33 @@ exports.addProduct = async (productData) => {
 
 exports.addItemsToCart = async (items) => {
   try {
-   
-    console.log(items);
-    const insertPromises = items.map((item) =>
-      db('Cart').insert({
-        product_name: item.product_name,
-        category_name: item.category_name,
-        vendor_name: item.vendor_name,
-        quantity_in_stock: item.quantity_in_stock, 
-        unit_price: item.unit_price,
-        product_id:item.product_id
-      })
-    );
+    await db.transaction(async (trx) => {
+      const insertPromises = items.map(async (item) => {
+        
+        
+        await trx('Cart').insert({
+          product_name: item.product_name,
+          category_name: item.category_name,
+          vendor_name: item.vendor_name,
+          quantity_in_stock: item.quantity_in_stock, 
+          unit_price: item.unit_price,
+          product_id: item.product_id
+        });
 
-    await Promise.all(insertPromises); 
-    return { success: true, message: 'Items added to the cart successfully' };
+        // Decrease quantity_in_stock in Products
+        await trx('products')
+          .where({ product_id: item.product_id })
+          .decrement('quantity_in_stock', item.quantity_in_stock);
+      });
+
+      // Wait for all insertions and updates to complete
+      await Promise.all(insertPromises);
+    });
+
+    console.log('Items inserted into Cart and Products updated successfully.');
   } catch (error) {
-    console.error('Error in addItemsToCart service:', error.message);
-    throw new Error('Failed to add items to the cart');
+    console.error(`Error inserting items into Cart: ${error.message}`);
+    throw new Error('Database operation failed.');
   }
 };
 exports.getCartItems = async () => {
@@ -308,23 +320,39 @@ exports.decreaseCartQuantityAndUpdateStock = async (cartId, productId) => {
 exports.increaseCartQuantityAndUpdateStock = async (cartId, productId) => {
   try {
     await db.transaction(async (trx) => {
-      console.log("dg");
+     
+      const product = await trx('Products')
+        .where({ product_id: productId })
+        .select('quantity_in_stock')
+        .first();
+    
+   
+      if (!product || product.quantity_in_stock <= 0) {
+        throw new Error("Insufficient stock in Products table.");
+      }
+    
+
       const cartItem = await trx('Cart')
         .where({ Cart_ID: cartId, product_id: productId })
         .first();
-
-   
-
-     
+    
+      if (!cartItem) {
+        throw new Error("Cart item not found.");
+      }
+    
+    
       await trx('Cart')
         .where({ Cart_ID: cartId, product_id: productId })
         .increment('quantity_in_stock', 1);
-
-     
+    
+   
       await trx('Products')
         .where({ product_id: productId })
         .decrement('quantity_in_stock', 1);
+    
+      console.log("Transaction completed successfully.");
     });
+    
 
     return { success: true, message: 'Cart quantity decreased and stock updated' };
   } catch (error) {
@@ -334,15 +362,42 @@ exports.increaseCartQuantityAndUpdateStock = async (cartId, productId) => {
 };
 
 
-exports.removeItem = async (cartId) => {
+exports.removeItem = async (Cart_ID, product_id) => {
   try {
-    const result = await db('cart')
-      .where({ Cart_ID: cartId })
-      .del();
+    console.log(Cart_ID,product_id);
+    // Start a transaction
+    await db.transaction(async (trx) => {
+      
+      const cartItem = await trx('cart')
+        .select('quantity_in_stock')
+        .where({ Cart_ID, product_id })
+        .first();
 
-    return result > 0; // Returns true if rows were affected
+      if (!cartItem) {
+        throw new Error('Cart item not found.');
+      }
+
+      const { quantity_in_stock } = cartItem;
+
+      // Update the quantity in the product table
+      await trx('products')
+        .where({ product_id })
+        .increment('quantity_in_stock', quantity_in_stock);
+
+      // Delete the item from the cart
+      const result = await trx('cart')
+        .where({ Cart_ID, product_id })
+        .del();
+
+      if (result <= 0) {
+        throw new Error('Failed to delete cart item.');
+      }
+    });
+
+    return true;
   } catch (error) {
     logger.error(`Error removing item from cart: ${error.message}`);
     throw new Error('Database operation failed.');
   }
 };
+

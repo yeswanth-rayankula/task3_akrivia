@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { generateAccessToken } = require('../../utils/jwtConfig');
+const { generateAccessToken, generateRefreshToken } = require('../../utils/jwtConfig');
 const knex = require('knex');
 const knexConfig = require('../../../knexfile');
 const logger = require('../../../logger');
@@ -29,11 +29,17 @@ const loginUser = async (identifier, password) => {
       email: user.email,
       id: user.user_id,
     });
+    const rtoken = generateRefreshToken({
+      name: user.username,
+      email: user.email,
+      id: user.user_id,
+    });
 
     logger.info(`User ${user.username} logged in successfully.`);
-
+     console.log(rtoken);
     return {
       token,
+      rtoken,
       user: {
         name: user.username,
         email: user.email,
@@ -42,7 +48,7 @@ const loginUser = async (identifier, password) => {
     };
   } catch (error) {
     logger.error(`Error logging in user ${identifier}: ${error.message}`);
-    throw new Error('Error logging in user');
+    throw new Error(error.message);
   }
 };
 

@@ -6,12 +6,17 @@ const loginUser = require('./src/v1/login/login.routes');
 const User = require('./src/v1/user/user.routes');
 const product = require('./src/v1/pagination/pagination.routes');
 const AWS = require('aws-sdk');
+const helmet=require('helmet');
 const { decryptRequestBody, encryptResponseBody } = require('./src/middlewares/decrypt');
 const fileroutes=require('./src/v1/file-uploads/file-uploads.routes');
 const rateLimit = require('express-rate-limit');
-const verifyToken = require('./src/middlewares/verifyToken');
+
+const { notFoundHandler, errorHandler} = require('./src/middlewares/globalErrorHandler');
+const slowDown = require('express-slow-down');
 
 
+
+app.use(helmet());
 app.use(express.json());
 app.use(cors({
   origin: 'http://localhost:4200',
@@ -21,12 +26,12 @@ app.use(cors({
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 100000,
+  max: 1000,
   message: 'Too many requests, please try again later.'
 });
 
 
-app.use(limiter);
+// app.use(limiter);
  app.use(decryptRequestBody);
 
 app.use('/api/v1/user',  register);
@@ -36,9 +41,10 @@ app.use('/api/v1/user',  User);
 app.use('/api/v1/user',product)
 app.use('/api/files',fileroutes)
 
+app.use(notFoundHandler);
 
 
 app.use(encryptResponseBody);
 
-
+app.use(errorHandler);
 app.listen(4000, () => console.log('Server running on port 4000'));

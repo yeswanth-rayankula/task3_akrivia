@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import * as JSZip from 'jszip';
-import * as FileSaver from 'file-saver';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { FileUploadService } from './file-upload-service.service';
 
 @Component({
   selector: 'app-file-upload',
@@ -15,16 +13,19 @@ export class FileUploadComponent implements OnInit {
   selectedFileNames: string[] = [];
   showModal = false;
   modalFileType: string | null = null;
+  modalFileContent: SafeResourceUrl | string | null = null;
 
-  modalFileContent: SafeResourceUrl | string | null = null; // Updated to accept string for images
-  constructor(private http: HttpClient, private sanitizer: DomSanitizer) {}
+  constructor(
+    private fileUploadService: FileUploadService,
+    private sanitizer: DomSanitizer
+  ) {}
 
   ngOnInit(): void {
     this.fetchUploadedFiles();
   }
 
   fetchUploadedFiles(): void {
-    this.http.get<any[]>('http://localhost:4000/api/files/files').subscribe(
+    this.fileUploadService.fetchUploadedFiles().subscribe(
       (response) => {
         this.files = response;
       },
@@ -45,19 +46,14 @@ export class FileUploadComponent implements OnInit {
     if (this.selectedFile) {
       const fileName = this.selectedFile.name;
       const fileType = this.selectedFile.type;
-
-      this.http
-        .get('http://localhost:4000/api/files/get-presigned-url', {
-          params: { fileName, fileType },
-        })
+    
+      this.fileUploadService
+        .getPresignedUrlForUpload(fileName, fileType)
         .subscribe(
           (response: any) => {
             const putUrl = response.url;
-
-            this.http
-              .put(putUrl, this.selectedFile, {
-                headers: { 'Content-Type': fileType },
-              })
+            this.fileUploadService
+              .uploadFileToS3(putUrl, this.selectedFile!, fileType)
               .subscribe(
                 () => {
                   console.log('File uploaded successfully to S3!');
@@ -72,6 +68,7 @@ export class FileUploadComponent implements OnInit {
             console.error('Error getting pre-signed URL for PUT:', error);
           }
         );
+        
     }
   }
 
@@ -85,74 +82,42 @@ export class FileUploadComponent implements OnInit {
   }
 
   showFile(fileName: string): void {
-    
-    this.http
-      .get<{ urls: { fileName: string; url: string }[] }>(
-        'http://localhost:4000/api/files/get-presigned-urls-for-get',
-        {
-          params: { fileNames: fileName },
+    this.fileUploadService
+      .getPresignedUrlsForDownload([fileName])
+      .subscribe((response) => {
+        const fileData = response.urls.find((file) => file.fileName === fileName);
+        if (!fileData) {
+          console.error('File URL not found for:', fileName);
+          alert('File URL not found');
+          return;
         }
-      )
-      .subscribe({
-        next: (response) => {
-          const fileData = response.urls.find((file) => file.fileName === fileName);
-          if (!fileData) {
-            console.error('File URL not found for:', fileName);
-            alert('File URL not found');
-            return;
+
+        this.fileUploadService.downloadFile(fileData.url).subscribe((fileBlob) => {
+          this.modalFileType = fileBlob.type;
+
+          if (fileBlob.type.startsWith('image')) {
+            const fileReader = new FileReader();
+            fileReader.onload = () => {
+              this.modalFileContent = fileReader.result as string;
+              this.showModal = true;
+            };
+            fileReader.readAsDataURL(fileBlob);
+          } else if (fileBlob.type === 'application/pdf') {
+            const pdfURL = URL.createObjectURL(fileBlob);
+            this.modalFileContent = this.sanitizer.bypassSecurityTrustResourceUrl(pdfURL);
+            this.showModal = true;
+          } else if (fileBlob.type.startsWith('text')) {
+            const fileReader = new FileReader();
+            fileReader.onload = () => {
+              this.modalFileContent = fileReader.result as string;
+              this.showModal = true;
+            };
+            fileReader.readAsText(fileBlob);
+          } else {
+            console.error('Unsupported file type:', fileBlob.type);
+            alert('Unsupported file type for preview.');
           }
-
-          this.http.get(fileData.url, { responseType: 'blob' }).subscribe({
-            next: (fileBlob: Blob) => {
-              this.modalFileType = fileBlob.type;
-
-              // Handle image files (JPEG, PNG, etc.)
-              if (fileBlob.type.startsWith('image')) {
-                const fileReader = new FileReader();
-                fileReader.onload = () => {
-                  this.modalFileContent = fileReader.result as string; // Data URL for the image
-                  this.showModal = true;
-                };
-                fileReader.readAsDataURL(fileBlob);
-              }
-              // Handle PDF files
-              else if (fileBlob.type === 'application/pdf') {
-                const pdfURL = URL.createObjectURL(fileBlob);
-                this.modalFileContent = this.sanitizer.bypassSecurityTrustResourceUrl(pdfURL);
-                this.showModal = true;
-              }
-              // Handle text files
-              else if (fileBlob.type.startsWith('text')) {
-                const fileReader = new FileReader();
-                fileReader.onload = () => {
-                  this.modalFileContent = fileReader.result as string; // Plain text content
-                  this.showModal = true;
-                };
-                fileReader.readAsText(fileBlob);
-              }
-              // Handle Excel files
-              else if (
-                fileBlob.type ===
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-              ) {
-                const fileURL = URL.createObjectURL(fileBlob);
-                this.modalFileContent = fileURL; // Direct link for download
-                this.showModal = true;
-              } else {
-                console.error('Unsupported file type:', fileBlob.type);
-                alert('Unsupported file type for preview.');
-              }
-            },
-            error: (err) => {
-              console.error('Error fetching file content:', err);
-              alert('Error fetching file content.');
-            },
-          });
-        },
-        error: (err) => {
-          console.error('Error fetching file URL:', err);
-          alert('Error fetching file URL.');
-        },
+        });
       });
   }
 
@@ -164,36 +129,11 @@ export class FileUploadComponent implements OnInit {
 
   downloadSelectedFiles(): void {
     if (this.selectedFileNames.length > 0) {
-      // Step 1: Fetch pre-signed URLs for the selected files
-      this.http.get<{ urls: { fileName: string, url: string }[] }>('http://localhost:4000/api/files/get-presigned-urls-for-get', {
-        params: { fileNames: this.selectedFileNames.join(',') } // Send selected file names as a comma-separated query parameter
-      }).subscribe({
-        next: (response) => {
-          const zip = new JSZip();
-
-          // Step 2: Fetch each file using the pre-signed URL
-          response.urls.forEach((fileData) => {
-            this.http.get(fileData.url, { responseType: 'arraybuffer' }).subscribe({
-              next: (fileContent) => {
-                // Step 3: Add file to zip using file name
-                zip.file(fileData.fileName, fileContent);
-              },
-              error: (err) => {
-                console.error('Error downloading file:', err);
-              },
-              complete: () => {
-                // Step 4: Once all files are added to the zip, generate and download the zip
-                zip.generateAsync({ type: 'blob' }).then((content) => {
-                  FileSaver.saveAs(content, 'downloaded_files.zip');
-                });
-              }
-            });
-          });
-        },
-        error: (err) => {
-          console.error('Error fetching pre-signed URLs:', err);
-        }
-      });
+      this.fileUploadService
+        .getPresignedUrlsForDownload(this.selectedFileNames)
+        .subscribe((response) => {
+          this.fileUploadService.generateAndDownloadZip(response.urls);
+        });
     }
   }
 }

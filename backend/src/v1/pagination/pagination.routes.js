@@ -4,15 +4,15 @@ const { getProducts, deleteProduct, editProduct, getCategories, getVendors, addP
 
 const router = express.Router();
 
-router.get('/getProducts',getProducts);
-router.put('/editProduct/:productId', editProduct);
-router.delete('/deleteProduct/:productId',deleteProduct);
-router.get('/getCategories',getCategories);
-router.get('/getVendors',getVendors);
-router.post('/addProduct',addProduct);
-router.post('/cart/addItems',addItemsToCart);
-router.get('/cart/items',getCartItems);
-router.post('/cart/decreaseQuantity', decreaseQuantity);
-router.post('/cart/increaseQuantity', increaseQuantity);
-router.delete('/cart/remove/:id',removeFromCart);
+router.get('/getProducts',verifyToken,getProducts);
+router.put('/editProduct/:productId',verifyToken, editProduct);
+router.delete('/deleteProduct/:productId',verifyToken,deleteProduct);
+router.get('/getCategories',verifyToken,getCategories);
+router.get('/getVendors',verifyToken,getVendors);
+router.post('/addProduct',verifyToken,addProduct);
+router.post('/cart/addItems',verifyToken,addItemsToCart);
+router.get('/cart/items',verifyToken,getCartItems);
+router.post('/cart/decreaseQuantity',verifyToken, decreaseQuantity);
+router.post('/cart/increaseQuantity',verifyToken, increaseQuantity);
+router.delete('/cart/remove/:Cart_ID',verifyToken,removeFromCart);
 module.exports = router;
