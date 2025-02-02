@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-const ACCESS_TOKEN_SECRET = '10';
-const REFRESH_TOKEN_SECRET = '10';
+const ACCESS_TOKEN_SECRET = '19090';
+const REFRESH_TOKEN_SECRET = '19090';
 
 
 const generateAccessToken = (payload) => {

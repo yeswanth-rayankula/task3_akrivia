@@ -7,8 +7,9 @@ import { DashboardComponent } from './dashboard.component';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
-
+import { CapitalizePipe } from './../../core/services/capitalize.pipe';
 import { DashboardRoutingModule } from './dashboard.routing';
+import { XlImportsComponent } from '../xl-imports/xl-imports.component';
 
 @NgModule({
   declarations: [
@@ -16,6 +17,8 @@ import { DashboardRoutingModule } from './dashboard.routing';
     NavbarComponent,
     PaginationComponent,
     FileUploadComponent,
+    CapitalizePipe,
+    XlImportsComponent
   ],
   imports: [
     CommonModule,

@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import * as XLSX from 'xlsx'; 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { InventoryService } from './inventory.service';
-import { computeStyles } from '@popperjs/core';
-
+import * as pako from 'pako';
+import { FileUploadService } from '../file-upload/file-upload-service.service';
 
 export interface InventoryItem {
   product_name: string;
@@ -31,6 +31,7 @@ export interface InventoryItem {
   styleUrls: ['./pagination.component.scss']
 })
 export class PaginationComponent implements OnInit {
+
   productImageUrl:string="";
   inventoryData: InventoryItem[] = []; 
   cartData: InventoryItem[] = [];
@@ -49,7 +50,7 @@ export class PaginationComponent implements OnInit {
   isModalOpen = false;
   selectedItems:any=[];
 
-  constructor(private fb: FormBuilder, private http: HttpClient,private inventoryService:InventoryService) {
+  constructor(private fb: FormBuilder, private http: HttpClient,private inventoryService:InventoryService,private fileUploadService:FileUploadService) {
    
     this.addProductForm = this.fb.group({
       product_name: ['', [Validators.required]],
@@ -58,7 +59,7 @@ export class PaginationComponent implements OnInit {
       quantity_in_stock: [0, [Validators.required, Validators.min(0)]],
       unit_price: [0, [Validators.required, Validators.min(0)]],
      
-      status: ['1', [Validators.required]] 
+     
     });
     (window as any).changeViewMode = this.changeViewMode.bind(this);
   }
@@ -142,11 +143,24 @@ export class PaginationComponent implements OnInit {
       this.applyFilters();
     } 
   }
-  
-  onfilechange(event: any): void {
-
+  async upload(file:any)
+  {
+    try {
+      const response: any = await this.fileUploadService.getPresignedUrlForUpload(file.name, file.type).toPromise();
+      await this.fileUploadService.uploadFileToS3(response.url, file, file.type).toPromise();
+      const getUrlResponse: any = await this.inventoryService.getPresignedUrl_forget(file.name, file.type).toPromise();
+      const url = getUrlResponse.urls[0].url;
+         console.log(url);
+       await this.http.post<any>('http://localhost:4000/api/v1/user/imports/add', { url:url,file_name:file.name}).toPromise();
+      console.log('POST Response:');
+    } catch (err) {
+      console.error('Error getting pre-signed URL:', err);
+      alert('Failed to upload image. Please try again.');
+    }
+  }
+  onFileSelected(event: any): void {
     const file = event.target.files[0];
- 
+    console.log(file.name,file.type);
     if (!file) {
       alert('No file selected.');
       return;
@@ -157,22 +171,16 @@ export class PaginationComponent implements OnInit {
       alert('Invalid file type. Please upload an Excel file.');
       return;
     }
-    const reader = new FileReader();
-   
-    reader.onload = (e: any) => {
-      console.log('Reader onload called!');
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      this.data = XLSX.utils.sheet_to_json(worksheet);
-      console.log('data is ', this.data);
-      this.adddata();
-
-    };
-    reader.readAsArrayBuffer(file);
+    this.upload(file)
+ 
+  
    
   }
+  handleImageUpload(event: any): void {
+    const file = event.target.files[0];
+    this.getPresignedUrl(file);
+  }
+  
   adddata() {
     this.data.forEach((data:any) => {
       this.inventoryService.addProduct(data)
@@ -211,8 +219,8 @@ export class PaginationComponent implements OnInit {
       page: this.currentPage.toString(),
       offset: this.itemsPerPage.toString(),
       searchText: this.searchText, 
-      ...Object.entries(this.selectedFilters) // Send filters as query parameters
-        .filter(([, value]) => value) // Only include filters with active values
+      ...Object.entries(this.selectedFilters) 
+        .filter(([, value]) => value) 
         .reduce((acc, [key, value]) => ({ ...acc, [key]: value.toString() }), {}),
     });
   
@@ -254,7 +262,7 @@ export class PaginationComponent implements OnInit {
     this.viewMode = mode;
   }
 
-  // Toggle edit mode for an item
+
   toggleEdit(item: InventoryItem): void {
     item.isEditing = true;
     item.editedProductName = item.product_name;
@@ -456,14 +464,10 @@ deleteItem(item: any): void {
   closeModal() {
     this.showModal = false;
   }
-  onFileSelected(event: any) {
-    this.selectedFile = event.target.files[0];
-    if (this.selectedFile) {
-      this.getPresignedUrl(this.selectedFile);
-    }
-  }
+ 
 
-  // Request pre-signed URL and upload image
+
+
   getPresignedUrl(file: File) {
     const fileName = file.name;
     const fileType =file.type;
@@ -471,7 +475,7 @@ deleteItem(item: any): void {
     console.log(fileType);
     this.http
       .get<{ url: string; fileUrl: string }>(
-        `http://localhost:4000/api/files/get-presigned-url`,{
+        `http://localhost:4000/api/v1/user/files/get-presigned-url`,{
           params: { fileName, fileType },
         }
       )
@@ -479,8 +483,25 @@ deleteItem(item: any): void {
         next: (response) => {
           const { url } = response;
 
-           console.log(url);
-          this.uploadToS3(url,file);
+           console.log(url,file,file.type);
+           this.fileUploadService
+           .uploadFileToS3(url, file, fileType)
+           .subscribe(
+             () => {
+                this.fileUploadService.getPresignedUrlsForDownload([fileName])
+                .subscribe((data)=>
+                {
+                  console.log(data);
+                  this.productImageUrl=data.urls[0].url;
+                })
+               console.log('File uploaded successfully to S3!');
+              
+             },
+             (error) => {
+               console.error('Error uploading file:', error);
+             }
+           );
+         
         },
         error: (err) => {
           console.error('Error getting pre-signed URL:', err);
@@ -491,37 +512,34 @@ deleteItem(item: any): void {
 
 
  
-  uploadToS3(presignedUrl: string, file:File) {
-    this.http.put(presignedUrl, file, { headers: { 'Content-Type': file.type } }).subscribe({
-      next: () => {
-        const objectKey = `${file.name}`;
+  uploadToS3(url: string, file: File): Promise<void> {
+    const formData = new FormData();
+    formData.append('file', file);
 
-        this.http.get('http://localhost:4000/api/files/get-presigned-urls-for-get', {
-          params: { fileNames: objectKey }
-        }).subscribe(
-          (getResponse: any) => {
-            const getUrl = getResponse.urls[0].url; 
-            console.log('GET pre-signed URL:', getUrl);
-            this.productImageUrl=getUrl;
-          },
-          (error) => {
-            console.error('Error getting GET pre-signed URL:', error);
-            alert('Failed to get access URL.');
-          }
-        );
-        
-        console.log('Image uploaded successfully:');
-      },
-      error: (err) => {
-        console.error('Error uploading to S3:', err);
-        alert('Failed to upload image. Please try again.');
-      }
+    return new Promise((resolve, reject) => {
+      this.http.put(url, formData, { headers: { 'Content-Type': file.type } }).subscribe({
+        next: () => {
+          console.log('File uploaded successfully');
+           this.fileUploadService.getPresignedUrlsForDownload([file.name]).subscribe((data)=>{
+            console.log(data.urls[0].url);
+            this.productImageUrl=data.urls[0].url;
+           })
+         
+          resolve();
+        },
+        error: (error) => {
+          console.error('Error uploading file:', error);
+          alert('There was an error uploading the file.');
+          reject(error);
+        }
+      });
     });
   }
 
-  // Submit form
+
   onSubmit() {
     console.log(this.addProductForm.value);
+
     if (this.addProductForm.valid && this.productImageUrl) {
       const productData = {
         ...this.addProductForm.value,
@@ -601,20 +619,20 @@ deleteItem(item: any): void {
    onImageEdit(event: any, item: InventoryItem): void {
     const file = event.target.files[0];
     if (file) {
-      // Preview the new image
+    
       const reader = new FileReader();
       reader.onload = () => {
-        item.previewImage = reader.result as string; // Display preview
+        item.previewImage = reader.result as string; 
       };
       reader.readAsDataURL(file);
   
-      // Upload the image to S3
+   
       const fileName = file.name;
       const fileType = file.type;
   
       this.http
         .get<{ url: string; fileUrl: string }>(
-          `http://localhost:4000/api/files/get-presigned-url`,
+          `http://localhost:4000/api/v1/user/files/get-presigned-url`,
           { params: { fileName, fileType } }
         )
         .subscribe({
@@ -638,14 +656,14 @@ deleteItem(item: any): void {
           const objectKey = `${file.name}`;
           this.http
             .get<{ urls: { url: string }[] }>(
-              `http://localhost:4000/api/files/get-presigned-urls-for-get`,
+              `http://localhost:4000/api/v1/user/files/get-presigned-urls-for-get`,
               { params: { fileNames: objectKey } }
             )
             .subscribe({
               next: (response) => {
-                const getUrl = response.urls[0].url; // Get the accessible URL
-                item.product_image = getUrl; 
-              
+                const getUrl = response.urls[0].url; 
+                this.productImageUrl= getUrl; 
+              console.log(this.productImageUrl);
                 alert('Image updated successfully!');
               },
               error: (err) => {

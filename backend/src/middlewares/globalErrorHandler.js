@@ -12,6 +12,7 @@ exports.notFoundHandler = (req, res, next) => {
 
     const statusCode = err.statusCode ; 
     const message = err.message ;
+    console.log(statusCode,message);
    
     res.status(statusCode).json({
       success: false,

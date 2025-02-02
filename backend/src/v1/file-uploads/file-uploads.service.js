@@ -7,16 +7,18 @@ const s3 = new AWS.S3({
 });
 
 const getPresignedUrl = (fileName, fileType) => {
+  console.log(fileName,fileType);
   const params = {
     Bucket: process.env.S3_BUCKET_NAME,
     Key: `yes/files/${fileName}`,
-    Expires: 300, 
+    Expires: 300000, 
     ContentType: fileType,
   };
-  return s3.getSignedUrlPromise('putObject', params);
+  return s3.getSignedUrl('putObject', params);
 };
 
 const getPresignedUrlsForGet = (fileNames) => {
+  console.log(fileNames);
   const files = fileNames.split(',');
   return files.map((fileName) => ({
     fileName,

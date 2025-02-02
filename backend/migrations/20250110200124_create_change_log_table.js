@@ -1,4 +1,4 @@
-exports.up = function(knex) {
+yexports.up = function(knex) {
   return knex.schema.createTable('change_log', function(table) {
     table.increments('change_id').primary(); 
     table.string('table_name').notNullable();

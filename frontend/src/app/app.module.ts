@@ -13,8 +13,8 @@ import { SignUpComponent } from './features/register/register.component';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
-import { InventoryService } from './features/pagination/inventory.service';
-import { DashboardRoutingModule } from './features/dashboard/dashboard.routing';
+import { XlImportsComponent } from './features/xl-imports/xl-imports.component';
+
 
 @NgModule({
   declarations: [AppComponent, LoginComponent, SignUpComponent],
@@ -28,7 +28,7 @@ import { DashboardRoutingModule } from './features/dashboard/dashboard.routing';
     provide: HTTP_INTERCEPTORS,
     useClass: AuthInterceptor,
     multi: true ,
-  }, AuthGuard,InventoryService],
+  }, AuthGuard],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

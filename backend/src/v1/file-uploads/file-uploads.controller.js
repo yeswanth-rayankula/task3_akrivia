@@ -18,9 +18,9 @@ exports.getPresignedUrl = async (req, res) => {
 
 
 exports.getPresignedUrlsForGet = async (req, res) => {
-console.log(req.query);
+
   const { fileNames } = req.query;
-  console.log(fileNames);
+  console.log("fucking");
   if (!fileNames) {
     return res.status(400).json({ error: 'Missing fileNames' });
   }

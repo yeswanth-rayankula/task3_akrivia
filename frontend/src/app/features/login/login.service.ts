@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
 
+import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class LoginService {
 
-  private apiUrl = 'http://localhost:4000/api/v1/user/login'; 
+  private apiUrl = `${environment.apiUrl}/api/v1/user/login`; 
 
   constructor(private http: HttpClient) { }
 
@@ -29,7 +28,7 @@ export class LoginService {
   }
  
  
-
+  
   
     
 }

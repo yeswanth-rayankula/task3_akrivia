@@ -10,10 +10,25 @@ exports.getAllProducts = async (page = 1, offset = 5, searchText = '', selectedF
     const limit = offset;
     const offsetValue = (page - 1) * offset;
 
-    let query = db('products')
+    const baseQuery = db('products')
       .join('categories', 'products.category_id', '=', 'categories.category_id')
       .join('product_to_vendor', 'products.product_id', '=', 'product_to_vendor.product_id')
       .join('vendors', 'product_to_vendor.vendor_id', '=', 'vendors.vendor_id')
+      .where('products.status', '1')
+      .andWhere('product_to_vendor.status', '1');
+
+    const applyFilters = (query) => {
+      if (searchText) {
+        query.andWhere(function () {
+          if (selectedFilters.category_name) this.orWhere('categories.category_name', 'like', `%${searchText}%`);
+          if (selectedFilters.vendor_name) this.orWhere('vendors.vendor_name', 'like', `%${searchText}%`);
+          if (selectedFilters.product_name) this.orWhere('products.product_name', 'like', `%${searchText}%`);
+        });
+      }
+    };
+
+
+    const productsQuery = baseQuery.clone()
       .select(
         'products.product_image',
         'products.product_id',
@@ -24,47 +39,16 @@ exports.getAllProducts = async (page = 1, offset = 5, searchText = '', selectedF
         'products.status',
         'vendors.vendor_name'
       )
-      .where('products.status', '1')
-      .andWhere('product_to_vendor.status', '1');
+      .limit(limit)
+      .offset(offsetValue);
 
-    if (searchText) {
-      query = query.andWhere(function () {
-        if (selectedFilters.category_name) {
-          this.orWhere('categories.category_name', 'like', `%${searchText}%`);
-        }
-        if (selectedFilters.vendor_name) {
-          this.orWhere('vendors.vendor_name', 'like', `%${searchText}%`);
-        }
-        if (selectedFilters.product_name) {
-          this.orWhere('products.product_name', 'like', `%${searchText}%`);
-        }
-      });
-    }
+    applyFilters(productsQuery);
+    const products = await productsQuery;
 
-    const products = await query.limit(limit).offset(offsetValue);
-
-    let countQuery = db('products')
-      .join('categories', 'products.category_id', '=', 'categories.category_id')
-      .join('product_to_vendor', 'products.product_id', '=', 'product_to_vendor.product_id')
-      .join('vendors', 'product_to_vendor.vendor_id', '=', 'vendors.vendor_id')
-      .where('products.status', '1')
-      .andWhere('product_to_vendor.status', '1');
-
-    if (searchText) {
-      countQuery = countQuery.andWhere(function () {
-        if (selectedFilters.category_name) {
-          this.orWhere('categories.category_name', 'like', `%${searchText}%`);
-        }
-        if (selectedFilters.vendor_name) {
-          this.orWhere('vendors.vendor_name', 'like', `%${searchText}%`);
-        }
-        if (selectedFilters.product_name) {
-          this.orWhere('products.product_name', 'like', `%${searchText}%`);
-        }
-      });
-    }
-
-    const totalProducts = await countQuery.count({ total: 'products.product_id' }).first();
+ 
+    const countQuery = baseQuery.clone().count({ total: 'products.product_id' }).first();
+    applyFilters(countQuery);
+    const totalProducts = await countQuery;
 
     logger.info(`Fetched ${products.length} products for page ${page}, offset ${offset}`);
     return {
@@ -76,6 +60,7 @@ exports.getAllProducts = async (page = 1, offset = 5, searchText = '', selectedF
     throw new Error('Error fetching products from the database');
   }
 };
+
 
 exports.deleteProduct = (productId) => {
   return new Promise((resolve, reject) => {
@@ -180,6 +165,7 @@ exports.getVendors = async () => {
 };
 
 exports.addProduct = async (productData) => {
+  console.log(productData);
   const { product_name, category_name, vendor_name, quantity_in_stock, unit_price, product_image, status } = productData;
   const trx = await db.transaction();
 
@@ -249,7 +235,6 @@ exports.addItemsToCart = async (items) => {
           product_id: item.product_id
         });
 
-        // Decrease quantity_in_stock in Products
         await trx('products')
           .where({ product_id: item.product_id })
           .decrement('quantity_in_stock', item.quantity_in_stock);

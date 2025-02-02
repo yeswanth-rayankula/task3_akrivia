@@ -1,6 +1,6 @@
 const productService = require('./pagination.service');
 const logger = require('../../../logger');
-const { productSchema, paginationSchema } = require('./pagination.utils');
+const { productSchema } = require('./pagination.utils');
 
 exports.getProducts = async (req, res) => {
   
@@ -10,7 +10,7 @@ exports.getProducts = async (req, res) => {
     const offset = parseInt(req.query.offset) || 5;
     const searchText = req.query.searchText || '';
     const selectedFilters = {};
-
+    console.log(req.query);
     Object.keys(req.query).forEach(key => {
       if (key !== 'page' && key !== 'offset' && key !== 'searchText') {
         selectedFilters[key] = req.query[key] === 'true';
@@ -80,7 +80,8 @@ exports.addProduct = async (req, res) => {
   
   try {
     const { product_name, category_name, vendor_name, quantity_in_stock, unit_price, product_image, status } = req.body;
-
+    const x=productSchema.validate(req.body);
+    console.log(x);
     const newProduct = await productService.addProduct({
       product_name,
       category_name,

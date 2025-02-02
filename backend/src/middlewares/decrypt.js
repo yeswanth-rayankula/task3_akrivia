@@ -1,12 +1,12 @@
 const crypto = require('crypto-js');
-
+require('dotenv').config();
 
 function decryptRequestBody(req, res, next) {
   
     if (req.body.encryptedData  ) {
       
         try {
-            const bytes = crypto.AES.decrypt(req.body.encryptedData, "10");
+            const bytes = crypto.AES.decrypt(req.body.encryptedData, process.env.crypto_key);
             const decryptedString = bytes.toString(crypto.enc.Utf8);
 
             if (!decryptedString) {
@@ -25,11 +25,13 @@ function decryptRequestBody(req, res, next) {
 
 
 function encryptResponseBody(req, res, next) {
+
+    console.log(process.env.crypto_key);
     const send = res.send;
     res.send = function (body) {
         if (body) {
             try {
-                const encryptedData = crypto.AES.encrypt(JSON.stringify(body), "10").toString();
+                const encryptedData = crypto.AES.encrypt(JSON.stringify(body), process.env.crypto_key).toString();
                 body = { encryptedData };
             } catch (err) {
                 console.error('Encryption error:', err);

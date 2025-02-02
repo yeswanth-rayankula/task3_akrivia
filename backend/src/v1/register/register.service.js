@@ -5,6 +5,8 @@ const logger = require('../../../logger');
 
 const db = knex(knexConfig.development);
 
+
+
 const registerNewUser = async (first_name, last_name, email, password) => {
   try {
     logger.info('Registering new user:', { first_name, last_name, email });
@@ -38,7 +40,7 @@ const registerNewUser = async (first_name, last_name, email, password) => {
       updated_at: db.fn.now(),
     });
 
-    const newUser = await db('users').where({ user_id: userId }).first();
+    const newUser =await  db('users').where({ user_id: userId }).first();
 
     logger.info('New user registered:', newUser);
     return newUser;

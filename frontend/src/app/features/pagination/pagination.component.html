@@ -13,7 +13,7 @@
         <i class="bi bi-upload"></i> Import
         <input
           type="file"
-          (change)="onfilechange($event)"
+          (change)="onFileSelected($event)"
           class="file-input"
         />
       </button>
@@ -119,7 +119,7 @@
             </td>
            
             
-            <td *ngIf="!item.isEditing">{{ item.product_name }}</td>
+            <td *ngIf="!item.isEditing">{{ item.product_name | capitalize }}</td>
             <td *ngIf="item.isEditing">
               <input class="form-control form-control-sm" [(ngModel)]="item.editedProductName" placeholder="Enter product name" />
             </td>
@@ -134,7 +134,7 @@
                 <option [value]="0">Not Available</option>
               </select>
             </td>
-            <td *ngIf="!item.isEditing">{{ item.category_name }}</td>
+            <td *ngIf="!item.isEditing">{{ item.category_name | capitalize }}</td>
             <td *ngIf="item.isEditing">
               <select class="form-select form-select-sm" [(ngModel)]="item.editedCategoryName">
                 <option *ngFor="let category of categories" [value]="category.category_name">
@@ -142,7 +142,7 @@
                 </option>
               </select>
             </td>
-            <td *ngIf="!item.isEditing">{{ item.vendor_name }}</td>
+            <td *ngIf="!item.isEditing">{{ item.vendor_name | capitalize }}</td>
             <td *ngIf="item.isEditing">
               <select class="form-select form-select-sm" [(ngModel)]="item.editedVendorName">
                 <option *ngFor="let vendor of vendors" [value]="vendor.vendor_name">
@@ -154,7 +154,7 @@
             <td *ngIf="item.isEditing">
               <input class="form-control form-control-sm" type="number"  min="0" [(ngModel)]="item.editedQuantity"   />
             </td>
-            <td *ngIf="!item.isEditing">{{ item.unit_price }}</td>
+            <td *ngIf="!item.isEditing">{{ item.unit_price | currency}}</td>
             <td *ngIf="item.isEditing">
               <input class="form-control form-control-sm" type="number"  min="0" [(ngModel)]="item.editedUnitPrice"/>
             </td>
@@ -266,10 +266,10 @@
             </div>
             <div class="mb-3">
               <label for="product_image" class="form-label">Upload Product Image</label>
-              <input id="product_image" type="file" class="form-control" (change)="onFileSelected($event)" />
+              <input id="product_image" type="file" class="form-control" (change)="handleImageUpload($event)" />
             </div>
             <div class="text-end">
-              <button type="submit" class="btn btn-primary" [disabled]="addProductForm.invalid || !selectedFile">
+              <button type="submit" class="btn btn-primary" [disabled]="addProductForm.invalid">
                 Add Product
               </button>
             </div>

@@ -3,13 +3,16 @@ import { FormBuilder, FormGroup, Validators} from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { LoginService } from './login.service';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
+
  export class LoginComponent {
   loginForm: FormGroup;
+
 
   constructor(private fb: FormBuilder, private loginService: LoginService, private router: Router,private toastr: ToastrService) {
     this.loginForm = this.fb.group({

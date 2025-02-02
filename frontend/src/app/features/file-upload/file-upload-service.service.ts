@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import * as JSZip from 'jszip';
 import * as FileSaver from 'file-saver';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FileUploadService {
-  private baseUrl = 'http://localhost:4000/api/files';
+  private baseUrl = `${environment.apiUrl}/api/v1/user/files`;
 
   constructor(private http: HttpClient) {}
 
@@ -22,6 +23,7 @@ export class FileUploadService {
   }
 
   uploadFileToS3(putUrl: string, file: File, fileType: string) {
+    console.log("uploading");
     return this.http.put(putUrl, file, {
       headers: { 'Content-Type': fileType },
     });
@@ -35,7 +37,7 @@ export class FileUploadService {
       }
     );
   }
-
+  
   downloadFile(url: string) {
     return this.http.get(url, { responseType: 'blob' });
   }

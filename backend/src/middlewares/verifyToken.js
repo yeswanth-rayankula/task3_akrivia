@@ -1,13 +1,13 @@
 const jwt = require('jsonwebtoken');
 const logger = require('./../../logger'); 
+require('dotenv').config();
 
-
-const ACCESS_TOKEN_SECRET = '10';
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 function verifyToken(req, res, next) {
    
   const token = req.headers['authorization']?.split(' ')[1];
-  //  console.log(req.method);
+
   if (!token) {
     
     logger.warn(`Authorization failed: No token provided for ${req.ip}`);
