@@ -12,11 +12,7 @@ const routes: Routes = [
     component: DashboardComponent,
     canActivate: [AuthGuard]
   },
-  {
-    path: 'imports',
-    component: XlImportsComponent
-  
-  },
+
   { path: '**', redirectTo: 'dashboard' }
 ];
 

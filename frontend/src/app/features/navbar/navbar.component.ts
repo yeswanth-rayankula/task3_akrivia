@@ -19,7 +19,7 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
     this.navbarService.getUserById().subscribe({
       next: (data) => {
-        console.log(data);
+        
         this.user = data;
         this.username = this.user.username;
         this.profilePicUrl=this.user.profile_pic;
@@ -64,14 +64,13 @@ export class NavbarComponent implements OnInit {
     console.log('Selected file:', this.selectedFile);
   
 
-    this.http.get('http://localhost:4000/api/files/get-presigned-url', {
+    this.http.get('http://localhost:4000/api/v1/user/files/get-presigned-url', {
       params: { fileName, fileType },
     }).subscribe(
       (response: any) => {
-        const putUrl = response.url; // Pre-signed URL for uploading the file
+        const putUrl = response.url;
         console.log('PUT pre-signed URL:', putUrl);
   
-        // Step 2: Upload the file using the PUT URL
         this.http.put(putUrl, this.selectedFile, {
           headers: { 'Content-Type': fileType },
         }).subscribe(
@@ -80,7 +79,7 @@ export class NavbarComponent implements OnInit {
   
             
             const objectKey = `${fileName}`; 
-            this.http.get('http://localhost:4000/api/files/get-presigned-urls-for-get', {
+            this.http.get('http://localhost:4000/api/v1/user/files/get-presigned-urls-for-get', {
               params: { fileNames: objectKey },
             }).subscribe(
               (getResponse: any) => {

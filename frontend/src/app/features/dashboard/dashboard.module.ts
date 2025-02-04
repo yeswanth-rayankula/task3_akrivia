@@ -10,6 +10,7 @@ import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { CapitalizePipe } from './../../core/services/capitalize.pipe';
 import { DashboardRoutingModule } from './dashboard.routing';
 import { XlImportsComponent } from '../xl-imports/xl-imports.component';
+import { ChatComponent } from '../chat/chat.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { XlImportsComponent } from '../xl-imports/xl-imports.component';
     PaginationComponent,
     FileUploadComponent,
     CapitalizePipe,
-    XlImportsComponent
+    XlImportsComponent,
+    ChatComponent
   ],
   imports: [
     CommonModule,

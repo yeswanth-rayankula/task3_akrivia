@@ -13,7 +13,7 @@ import { SignUpComponent } from './features/register/register.component';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
-import { XlImportsComponent } from './features/xl-imports/xl-imports.component';
+
 
 
 @NgModule({

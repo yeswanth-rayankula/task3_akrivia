@@ -41,7 +41,7 @@ export class PaginationComponent implements OnInit {
   itemsPerPage: number = 5; 
   totalItems: number = 0; 
   totalPages: number = 0; 
-  viewMode: 'viewAll' | 'cart' = 'viewAll'; 
+  viewMode: 'viewAll' | 'cart' |'import' | 'chat' = 'viewAll'; 
   showModal: boolean = false;
   addProductForm: FormGroup; 
   selectedFile: File | null = null;
@@ -63,7 +63,7 @@ export class PaginationComponent implements OnInit {
     });
     (window as any).changeViewMode = this.changeViewMode.bind(this);
   }
-  changeViewMode(mode: 'viewAll' | 'cart') {
+  changeViewMode(mode: 'viewAll' | 'cart' | 'chat' | 'import') {
     console.log(mode);
     this.viewMode = mode;
   }

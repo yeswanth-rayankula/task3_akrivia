@@ -18,6 +18,20 @@ const getUserById = async (id) => {
     throw new Error('Error fetching user data');
   }
 };
+const getAllUser = async () => {
+  try {
+    const user = await db('users').select('user_id', 'username', 'profile_pic');;
+
+    if (!user) {
+      logger.warn(`User with ID ${id} not found.`);
+    }
+
+    return user;
+  } catch (error) {
+    logger.error('Error fetching user data:', error.message);
+    throw new Error('Error fetching user data');
+  }
+};
 
 const updateUser = async (userId, updatedData) => {
   try {
@@ -43,4 +57,4 @@ const updateUser = async (userId, updatedData) => {
   }
 };
 
-module.exports = { getUserById, updateUser };
+module.exports = { getUserById, updateUser,getAllUser };

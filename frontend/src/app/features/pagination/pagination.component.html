@@ -40,6 +40,20 @@
       >
         Cart
       </button>
+      <button 
+      class="btn" 
+      [ngClass]="{'btn-primary': viewMode === 'import', 'btn-outline-primary': viewMode !== 'import'}"
+        (click)="changeViewMode('import')"
+      >
+        import
+      </button>
+      <button 
+      class="btn" 
+      [ngClass]="{'btn-primary': viewMode === 'chat', 'btn-outline-primary': viewMode !== 'chat'}"
+        (click)="changeViewMode('chat')"
+      >
+      chat
+      </button>
     </div>
     
     <div class="search-filter">
@@ -62,6 +76,7 @@
             <label>
               <input type="checkbox" (change)="onCheckboxChange('product_name', $event)" /> Product Name
             </label>
+            
           </li>
         </ul>
       </div>
@@ -72,6 +87,12 @@
   <!-- Main Content -->
   <div class="main-content">
     <!-- View All Table -->
+    <div *ngIf="viewMode === 'chat'">
+      <app-chat></app-chat>
+   </div>
+     <div *ngIf="viewMode === 'import'">
+        <app-xl-imports></app-xl-imports>
+     </div>
     <div class="table-responsive" *ngIf="viewMode === 'viewAll'">
       <table class="table table-hover">
         <thead>

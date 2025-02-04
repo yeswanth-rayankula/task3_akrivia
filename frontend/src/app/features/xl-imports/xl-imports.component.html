@@ -1,5 +1,5 @@
 <div class="container mt-4">
-    <h2 class="text-center mb-4">Imported Files</h2>
+
     <div class="table-responsive">
       <table class="table table-bordered table-hover">
         <thead class="table-dark">
@@ -9,6 +9,9 @@
             <th>File</th>
             <th>Invalid Records</th>
             <th>Status</th>
+            <th>Correct records</th>
+            <th>Wrong records</th>
+            <th>manual check</th>
           </tr>
         </thead>
         <tbody>
@@ -24,7 +27,7 @@
             <td>
               <ng-container *ngIf="record.wrong_path; else noInvalidRecords">
                 <a [href]="record.wrong_path" target="_blank" class="btn btn-danger btn-sm">
-                  <i class="bi bi-exclamation-triangle"></i> Download Invalid Records
+                  <i class="bi bi-exclamation-triangle"></i> Invalid Records
                 </a>
               </ng-container>
               <ng-template #noInvalidRecords>
@@ -36,6 +39,17 @@
                 {{ record.status === 1 ? 'Completed' : 'Pending' }}
               </span>
             </td>
+            <td>
+              {{ record.correct === null ? 'Pending' : record.correct }}
+            </td>
+            <td>
+              {{ record.incorrect === null ? 'Pending' : record.incorrect }}
+            </td>
+             <td>
+              <button *ngIf="record.status === 0" (click)="onManualCheck(record.id)">Manual Check</button>
+
+
+             </td>
           </tr>
         </tbody>
       </table>

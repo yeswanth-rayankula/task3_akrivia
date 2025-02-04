@@ -7,6 +7,8 @@ interface ImportRecord {
   file_path: string;
   status: number;
   wrong_path: string;
+  correct:number;
+  incorrect:number;
 }
 
 @Component({
@@ -29,5 +31,19 @@ export class XlImportsComponent implements OnInit {
         (data) => { this.imports = data; },
         (error) => { console.error('Error fetching imports:', error); }
       );
+  }
+  onManualCheck(id: any) {
+    if (id) {
+      
+      this.http.post('http://localhost:4000/api/v1/user/imports/manual-check', { recordId: id })
+        .subscribe(
+          (response) => {
+            console.log('Manual check success:', response);
+          },
+          (error) => {
+            console.error('Error triggering manual check:', error);
+          }
+        );
+    }
   }
 }
