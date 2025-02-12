@@ -113,7 +113,7 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    if (request.url.includes('akv-interns') || request.url.includes('files')) {
+    if (request.url.includes('akv-interns') ) {
       return next.handle(request);
     }
 

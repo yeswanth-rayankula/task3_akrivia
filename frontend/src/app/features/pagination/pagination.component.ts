@@ -5,6 +5,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { InventoryService } from './inventory.service';
 import * as pako from 'pako';
 import { FileUploadService } from '../file-upload/file-upload-service.service';
+import { NavbarService } from '../navbar/navbar.service';
+import { from, of, Subject } from 'rxjs';
 
 export interface InventoryItem {
   product_name: string;
@@ -31,9 +33,13 @@ export interface InventoryItem {
   styleUrls: ['./pagination.component.scss']
 })
 export class PaginationComponent implements OnInit {
-
-  productImageUrl:string="";
   inventoryData: InventoryItem[] = []; 
+  subs: Subject<number> = new Subject<number>();
+ 
+
+  
+  productImageUrl:string="";
+
   cartData: InventoryItem[] = [];
   categories:any=[];
   vendors:any=[];
@@ -49,8 +55,8 @@ export class PaginationComponent implements OnInit {
   searchText: string = '';
   isModalOpen = false;
   selectedItems:any=[];
-
-  constructor(private fb: FormBuilder, private http: HttpClient,private inventoryService:InventoryService,private fileUploadService:FileUploadService) {
+  role:any;
+  constructor(private fb: FormBuilder, private http: HttpClient,private navbarService:NavbarService,private inventoryService:InventoryService,private fileUploadService:FileUploadService) {
    
     this.addProductForm = this.fb.group({
       product_name: ['', [Validators.required]],
@@ -61,6 +67,7 @@ export class PaginationComponent implements OnInit {
      
      
     });
+   
     (window as any).changeViewMode = this.changeViewMode.bind(this);
   }
   changeViewMode(mode: 'viewAll' | 'cart' | 'chat' | 'import') {
@@ -89,15 +96,21 @@ export class PaginationComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.navbarService.getUserById()
+    .subscribe(
+      (data)=>{console.log(data.role,"page");this.role=data.role},
+      (err)=>{console.log(err)}
+    )
+
     this.loadInventory();
     this.loadCategories();
     this.loadVendors();
     this.loadCart();
   }
   loadCart() {
-    console.log(this.searchText);
-    console.log(this.selectedFilters);
-    console.log("hiell");
+    // console.log(this.searchText);
+    // console.log(this.selectedFilters);
+    // console.log("hiell");
     this.inventoryService.getCartItems()
       .subscribe({
         next: (response) => {
@@ -184,15 +197,13 @@ export class PaginationComponent implements OnInit {
   adddata() {
     this.data.forEach((data:any) => {
       this.inventoryService.addProduct(data)
-        .subscribe({
-          next: (response) => {
-            this.loadInventory();
-            console.log('Product added successfully:', response);
-          },
-          error: (err) => {
-            console.error('Error adding product:', err);
-          }
-        });
+        .then((data)=>{
+          
+          console.log(data);
+        })
+        .catch((err)=>{
+          console.log(err);
+        })
     });
 
   }

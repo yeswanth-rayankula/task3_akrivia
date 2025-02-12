@@ -17,6 +17,10 @@ export class RegisterService {
     const registerData = { first_name, last_name, email, password };
     return this.http.post<any>(`${this.apiUrl}`, registerData);
   }
+  getLocations(): Observable<any> {
+   
+    return this.http.get<any>(`${this.apiUrl}/getLocations`);
+  }
   
 
 

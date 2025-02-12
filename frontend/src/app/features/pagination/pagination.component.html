@@ -9,7 +9,7 @@
       <button class="btn btn-outline-primary" (click)="downloadSelectedItems()">
         <i class="bi bi-download"></i> Download All
       </button>
-      <button class="btn btn-outline-primary position-relative">
+      <button class="btn btn-outline-primary position-relative" *ngIf="role === 'Admin' || role === 'Manager'">
         <i class="bi bi-upload"></i> Import
         <input
           type="file"
@@ -17,9 +17,10 @@
           class="file-input"
         />
       </button>
-      <button class="btn btn-primary" (click)="openAddProductModal()">
+      <button class="btn btn-primary" (click)="openAddProductModal()" *ngIf="role === 'Manager'">
         <i class="bi bi-plus-lg"></i> Add Product
       </button>
+      <app-group-chat></app-group-chat>
     </div>
   </div>
 
@@ -105,7 +106,7 @@
             <th>Vendors</th>
             <th>Quantity</th>
             <th>Unit Price</th>
-            <th>Actions</th>
+            <th *ngIf="role === 'Admin' || role === 'Manager'">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -179,7 +180,7 @@
             <td *ngIf="item.isEditing">
               <input class="form-control form-control-sm" type="number"  min="0" [(ngModel)]="item.editedUnitPrice"/>
             </td>
-            <td class="actions-cell">
+            <td class="actions-cell" *ngIf="role === 'Admin' || role === 'Manager'">
               <div class="btn-group">
                 <button *ngIf="item.isEditing" class="btn btn-sm btn-success" (click)="saveEdit(item)">
                   <i class="bi bi-check-lg"></i>

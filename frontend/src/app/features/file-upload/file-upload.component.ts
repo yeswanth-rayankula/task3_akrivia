@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FileUploadService } from './file-upload-service.service';
+import { NavbarService } from '../navbar/navbar.service';
 
 @Component({
   selector: 'app-file-upload',
@@ -14,13 +15,19 @@ export class FileUploadComponent implements OnInit {
   showModal = false;
   modalFileType: string | null = null;
   modalFileContent: SafeResourceUrl | string | null = null;
-
+  role:any;
   constructor(
     private fileUploadService: FileUploadService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private navbarService:NavbarService
   ) {}
 
   ngOnInit(): void {
+    this.navbarService.getUserById()
+    .subscribe(
+      (data)=>{console.log(data.role,"page");this.role=data.role},
+      (err)=>{console.log(err)}
+    )
     this.fetchUploadedFiles();
   }
 

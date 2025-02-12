@@ -56,6 +56,7 @@
           <small *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched" class="text-danger">
             Password must be at least 8 characters.
           </small>
+         
         </div>
         <button class="btn btn-primary w-100" [disabled]="signupForm.invalid">Create account</button>
       </form>

@@ -28,11 +28,13 @@ const loginUser = async (identifier, password) => {
       name: user.username,
       email: user.email,
       id: user.user_id,
+      role:user.role
     });
     const rtoken = generateRefreshToken({
       name: user.username,
       email: user.email,
       id: user.user_id,
+      role:user.role
     });
 
     logger.info(`User ${user.username} logged in successfully.`);

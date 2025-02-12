@@ -2,7 +2,7 @@ const crypto = require('crypto-js');
 require('dotenv').config();
 
 function decryptRequestBody(req, res, next) {
-  
+//    console.log("hello",req.body);
     if (req.body.encryptedData  ) {
       
         try {
@@ -26,7 +26,7 @@ function decryptRequestBody(req, res, next) {
 
 function encryptResponseBody(req, res, next) {
 
-    console.log(process.env.crypto_key);
+    // console.log(req.body);
     const send = res.send;
     res.send = function (body) {
         if (body) {

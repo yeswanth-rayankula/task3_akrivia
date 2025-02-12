@@ -18,6 +18,7 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
 
 
 
+
 @NgModule({
   declarations: [AppComponent, LoginComponent, SignUpComponent, ForgetPasswordComponent, ResetPasswordComponent],
   imports: [BrowserModule, ReactiveFormsModule, HttpClientModule, AppRoutingModule,FormsModule, BrowserAnimationsModule,

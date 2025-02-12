@@ -10,7 +10,7 @@ const loginUserHandler = async (req, res,next) => {
     return res.status(400).json({ message: error.details[0].message });
   }
    const { identifier, password } = req.body;
-  
+   
   try {
     const { token,rtoken, user } = await loginUser(identifier, password);
     res.status(200).json({ message: 'User logged in successfully', token,rtoken, user });

@@ -1,11 +1,11 @@
 <div class="file-upload-container">
   <div class="upload-section">
-    <h2>Upload File</h2>
-    <div class="input-group">
+    <h2 *ngIf="role === 'Admin' || role === 'Manager'">Upload File</h2>
+    <div class="input-group" *ngIf="role === 'Admin' || role === 'Manager'">
       <input type="file" (change)="onFileSelected($event)" />
     </div>
     <div class="button-group">
-      <button (click)="uploadFile()">Upload</button>
+      <button (click)="uploadFile()" *ngIf="role === 'Admin' || role === 'Manager'">Upload</button>
       <button
         (click)="downloadSelectedFiles()"
         [disabled]="selectedFileNames.length === 0"

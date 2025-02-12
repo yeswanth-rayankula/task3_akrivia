@@ -140,6 +140,7 @@ exports.editProduct = async (productId, updatedProduct) => {
 
 exports.getCategories = async () => {
   try {
+    console.log("fgh");
     const categories = await db('categories')
       .select('category_name')
       .where('status', '1');

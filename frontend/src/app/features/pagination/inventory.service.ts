@@ -21,8 +21,8 @@ export class InventoryService {
     return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/cart/items`);
   }
 
-  addProduct(productData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/addProduct`, productData);
+  addProduct(productData: any): Promise<any> {
+    return this.http.post(`${this.apiUrl}/addProduct`, productData).toPromise();
   }
 
   getVendors(): Observable<{ data: any[] }> {

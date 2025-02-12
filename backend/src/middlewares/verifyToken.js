@@ -30,5 +30,13 @@ function verifyToken(req, res, next) {
     next();
   });
 }
-
-module.exports = verifyToken;
+function authorizeRole(allowedRoles) {
+  return (req, res, next) => {
+    if (!allowedRoles.includes(req.user.role)) {
+      logger.warn(`Access denied for role ${req.user.role} on ${req.originalUrl}`);
+      return res.status(403).json({ message: "Forbidden: You do not have permission." });
+    }
+    next();
+  };
+}
+module.exports = {verifyToken,authorizeRole};

@@ -3,13 +3,14 @@ const cors = require('cors');
 const app = express();
 const socketIo = require('socket.io');
 const http = require('http');
-
+const setupSwagger = require('./swagger');
 require('dotenv').config();
 const register = require('./src/v1/register/register.routes');
 const loginUser = require('./src/v1/login/login.routes');
 const User = require('./src/v1/user/user.routes');
 const product = require('./src/v1/pagination/pagination.routes');
 // const AWS = require('aws-sdk');
+const jwt = require('jsonwebtoken');
 const helmet=require('helmet');
 const { decryptRequestBody, encryptResponseBody } = require('./src/middlewares/decrypt');
 const fileroutes=require('./src/v1/file-uploads/file-uploads.routes');
@@ -18,15 +19,28 @@ const { notFoundHandler, errorHandler} = require('./src/middlewares/globalErrorH
 // const slowDown = require('express-slow-down');
 const { generateAccessToken } = require('./src/utils/jwtConfig');
 const imports = require('./src/v1/imports-file/imports-file.routes');  
-
+const bcrypt = require('bcryptjs');
 const knex = require('knex');
 const knexConfig = require('./knexfile');
-
+const nodemailer = require("nodemailer");
+const statusMonitor = require('express-status-monitor');
+app.use(statusMonitor());
 
 const db = knex(knexConfig.development);
+
 app.use(helmet());
 app.use(express.json());
 app.use(cors());
+
+
+const ex=require('events');
+const e=new ex();
+e.on('helo',(data)=>{
+  console.log("dgh");
+})
+e.emit('helo',10);
+
+
 
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -35,13 +49,17 @@ const io = socketIo(server, {
 // app.use(limiter);
 app.use(decryptRequestBody);
 
+setupSwagger(app);
 app.use('/api/v1/user',  register);
 app.use('/api/v1/user',  loginUser);
 app.use('/api/v1/user',  User);
 app.use('/api/v1/user',product)
 app.use('/api/v1/user/files',fileroutes);
 
-app.use('/api/v1/user/imports',imports)
+app.use('/api/v1/user/imports',imports);
+
+
+
 app.get('/api/v1/user/chat-history/:sender_id/:receiver_id', async (req, res) => {
   try {
     console.log('Fetching chat history...');
@@ -60,10 +78,6 @@ app.get('/api/v1/user/chat-history/:sender_id/:receiver_id', async (req, res) =>
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-
-
-
 app.post("/token", (req, res) => {
   const { token: refreshToken } = req.body;
 
@@ -79,17 +93,13 @@ app.post("/token", (req, res) => {
     res.json({ accessToken });
   });
 });
-
-
-
-
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  socket.on('sendMessage', ({ sender_id, receiver_id, message }) => {
+  socket.on('sendMessage', async ({ sender_id, receiver_id, message }) => {
     console.log(`Message from ${sender_id} to ${receiver_id}: ${message}`);
 
-    db('messages')
+    await  db('messages')
       .insert({
         sender_id: sender_id,
         receiver_id: receiver_id,
@@ -106,17 +116,25 @@ io.on('connection', (socket) => {
   });
 
   socket.on('joinChat', (user_id) => {
-    console.log(`User ${user_id} joined chat`);
+  
     socket.join(user_id.toString());
   });
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
+
+  
+  socket.on("join_team", (teamId) => {
+    socket.join(`team_${teamId}`);
+    console.log(`User joined team ${teamId}`);
 });
 
-const nodemailer = require("nodemailer");
-
+socket.on("send_message", ({ teamId, sender, text }) => {
+  console.log(teamId, sender, text);
+    io.to(`team_${teamId}`).emit("receive_message", { sender, text });
+});
+});
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
@@ -125,18 +143,18 @@ const transporter = nodemailer.createTransport({
       pass: process.env.SMTP_PASS
   }
 });
-const jwt = require('jsonwebtoken');
 app.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
     console.log(email);
     const user = await db("users").where({ email });
-   
+     console.log(user);
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
     console.log("hello")
-    const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+    console.log(user[0].user_id,"hejlo")
+    const token = jwt.sign({ id: user[0].user_id }, process.env.JWT_SECRET, { expiresIn: "15m" });
     const resetLink = `http://localhost:4200/reset-password?token=${token}`;
     console.log("hello")
     await transporter.sendMail({
@@ -151,13 +169,12 @@ app.post("/forgot-password", async (req, res) => {
     res.status(500).json({ message: "Error processing request" });
   }
 });
-const bcrypt = require('bcryptjs');
 app.post("/reset-password", async (req, res) => {
   try {
     const { password,token } = req.body;
-    console.log(password.password);
-    console.log("toek",token);
-    console.log("hello yeswanth");
+    // console.log(password.password);
+    // console.log("toek",token);
+    // console.log("hello yeswanth");
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log(decoded,"decodes");
     const hashedPassword =await bcrypt.hash(password.password, 10);
@@ -171,7 +188,8 @@ app.post("/reset-password", async (req, res) => {
 });
 
 app.use(notFoundHandler);
-app.use(encryptResponseBody);
 app.use(errorHandler);
+app.use(encryptResponseBody);
+
 
 server.listen(4000, () => console.log('Server running on port 4000'));

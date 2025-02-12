@@ -11,6 +11,8 @@ import { CapitalizePipe } from './../../core/services/capitalize.pipe';
 import { DashboardRoutingModule } from './dashboard.routing';
 import { XlImportsComponent } from '../xl-imports/xl-imports.component';
 import { ChatComponent } from '../chat/chat.component';
+import { group } from 'console';
+import { GroupChatComponent } from '../group-chat/group-chat.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +22,9 @@ import { ChatComponent } from '../chat/chat.component';
     FileUploadComponent,
     CapitalizePipe,
     XlImportsComponent,
-    ChatComponent
+    ChatComponent,
+    GroupChatComponent
+
   ],
   imports: [
     CommonModule,

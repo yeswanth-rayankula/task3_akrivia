@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators} from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { LoginService } from './login.service';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -12,15 +13,16 @@ import { LoginService } from './login.service';
 
  export class LoginComponent {
   loginForm: FormGroup;
-
+  // asta: FormGroup;
 
   constructor(private fb: FormBuilder, private loginService: LoginService, private router: Router,private toastr: ToastrService) {
     this.loginForm = this.fb.group({
       identifier: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
+ 
   }
-
+  
   onSubmit(): void {
     if (this.loginForm.invalid) return;
 
