@@ -112,6 +112,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { SocketService } from './../../core/services/socket.service';
 import { NavbarService } from '../navbar/navbar.service';
+import { CheckService } from 'src/app/check/check.service';
+import { log } from 'console';
 
 interface User {
   user_id: number;
@@ -144,6 +146,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+  
     this.fetchUsers();
     
     this.navbarService.getUserById().subscribe(data => {

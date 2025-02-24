@@ -692,3 +692,138 @@ deleteItem(item: any): void {
 
 }
 
+// #include <iostream>
+// #include <vector>
+
+// using namespace std;
+
+// struct Time {
+//     int hours, minutes, seconds;
+//     string meridian;
+// };
+
+// Time cal(Time initial_time, Time work_hours, vector<Time> breaks) {
+//     Time t = {0, 0, 0, "AM"};
+
+//     // Breaks
+//     for (auto i : breaks) {
+//         t.seconds += i.seconds;
+//         t.minutes += i.minutes + (t.seconds / 60);
+//         t.hours += i.hours + (t.minutes / 60);
+
+//         t.seconds = t.seconds % 60;
+//         t.minutes = t.minutes % 60;
+//         t.hours = t.hours % 24;
+//     }
+
+//     // Work hours
+//     t.seconds += work_hours.seconds;
+//     t.minutes += work_hours.minutes + (t.seconds / 60);
+//     t.hours += work_hours.hours + (t.minutes / 60);
+
+//     t.seconds = t.seconds % 60;
+//     t.minutes = t.minutes % 60;
+//     t.hours = t.hours % 24;
+
+//     // Initial time
+//     t.seconds += initial_time.seconds;
+//     t.minutes += initial_time.minutes + (t.seconds / 60);
+//     t.hours += initial_time.hours + (t.minutes / 60);
+
+//     t.seconds = t.seconds % 60;
+//     t.minutes = t.minutes % 60;
+//     t.hours = t.hours % 24;
+
+//     if (t.hours >= 12)
+//         t.meridian = "PM";
+//     else
+//         t.meridian = "AM";
+
+//     if (t.hours == 0) t.hours = 12; 
+//     if (t.hours > 12) t.hours -= 12; 
+
+//     return t;
+// }
+
+// int main() {
+//     Time initial_time = {2, 0, 0, "PM"};
+//     Time work_hours = {8, 0, 0};
+//     vector<Time> breaks = {{1,35,9},{1,29,2}};
+
+//     if (initial_time.meridian == "PM" && initial_time.hours != 12)
+//         initial_time.hours += 12;
+//     if (initial_time.meridian == "AM" && initial_time.hours == 12)
+//         initial_time.hours = 0;
+
+//     Time exit_time = cal(initial_time, work_hours, breaks);
+
+//     cout <<  exit_time.hours << ":" << exit_time.minutes << ":" << exit_time.seconds << " " << exit_time.meridian << endl;
+//     return 0;
+// }
+
+
+
+
+// class Time {
+//   constructor(hours, minutes, seconds, meridian = "AM") {
+//     this.hours = hours;
+//     this.minutes = minutes;
+//     this.seconds = seconds;
+//     this.meridian = meridian;
+//   }
+// }
+
+// function calculateExitTime(initialTime, workHours, breaks) {
+//     let t = { hours: 0, minutes: 0, seconds: 0 };
+
+//     // Breaks
+//     breaks.forEach(i => {
+//         t.seconds += i.seconds;
+//         t.minutes += i.minutes + Math.floor(t.seconds / 60);
+//         t.hours += i.hours + Math.floor(t.minutes / 60);
+
+//         t.seconds %= 60;
+//         t.minutes %= 60;
+//     });
+
+//     // Work hours
+//     t.seconds += workHours.seconds;
+//     t.minutes += workHours.minutes + Math.floor(t.seconds / 60);
+//     t.hours += workHours.hours + Math.floor(t.minutes / 60);
+
+//     t.seconds %= 60;
+//     t.minutes %= 60;
+
+//     //initial time
+//     let startHours = initialTime.hours;
+//     if (initialTime.meridian === "PM" && initialTime.hours !== 12) {
+//         startHours += 12;
+//     }
+//     if (initialTime.meridian === "AM" && initialTime.hours === 12) {
+//         startHours = 0;
+//     }
+
+//     // Add initial time
+//     t.seconds += initialTime.seconds;
+//     t.minutes += initialTime.minutes + Math.floor(t.seconds / 60);
+//     t.hours += startHours + Math.floor(t.minutes / 60);
+
+//     t.seconds %= 60;
+//     t.minutes %= 60;
+//     t.hours %= 24;
+
+//     let meridian = t.hours >= 12 ? "PM" : "AM";
+//     let finalHours = t.hours % 12;
+//     if (finalHours === 0) finalHours = 12;
+
+//     return new Time(finalHours, t.minutes, t.seconds, meridian);
+// }
+
+
+// let initialTime = new Time(10, 10, 20, "AM");
+// let workHours =new Time(1,0,0);
+// let breaks = [new Time(1, 2, 2), new Time(1, 2, 1)];
+
+
+// let exitTime = calculateExitTime(initialTime, workHours, breaks);
+// console.log(`${exitTime.hours}:${exitTime.minutes}:${exitTime.seconds} ${exitTime.meridian}`);
