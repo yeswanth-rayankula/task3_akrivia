@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class SocketService {
-  private socket: Socket;
+  private socket: Socket; 
 
   constructor() {
     this.socket = io('http://localhost:4000');

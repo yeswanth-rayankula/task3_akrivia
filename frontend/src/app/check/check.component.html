@@ -1,0 +1,7 @@
+<form  [formGroup]="loginFrom" (ngSubmit)="onSubmit()">
+   <input formControlName="identifier"/>
+   <label>{{ loginFrom.value.identifier }}</label>
+
+   <button>Submit</button>
+</form>
+  

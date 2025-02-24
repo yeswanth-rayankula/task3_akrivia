@@ -3,15 +3,24 @@ const { generateAccessToken, generateRefreshToken } = require('../../utils/jwtCo
 const knex = require('knex');
 const knexConfig = require('../../../knexfile');
 const logger = require('../../../logger');
-
 const db = knex(knexConfig.development);
+const { Model } = require('objection');
+Model.knex(db)
 
+const User=require('./../../../model/user');
+const Department=require('./../../../model/Department.js');
+const Employee = require('../../../model/Employee.js');
 const loginUser = async (identifier, password) => {
+  console.log(identifier)
   try {
-    const user = await db('users')
-      .where('email', identifier)
-      .orWhere('username', identifier)
-      .first();
+ 
+    const data=await Department.query().findById(1).withGraphFetched('employees');
+    console.log(data)
+    const user = await User.query()
+    .where('email', identifier)
+
+    .first();
+  
 
     if (!user) {
       logger.warn(`Login failed: User with identifier ${identifier} not found.`);

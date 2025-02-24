@@ -4,7 +4,8 @@ const logger = require('../../../logger');
 const { productSchema } = require('./pagination.utils');
 
 const db = knex(knexConfig.development);
-
+const { Model } = require('objection');
+Model.knex(db)
 exports.getAllProducts = async (page = 1, offset = 5, searchText = '', selectedFilters = {}) => {
   try {
     const limit = offset;
